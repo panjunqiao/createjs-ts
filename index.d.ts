@@ -79,6 +79,7 @@ declare namespace createjs {
         type: string;
 
         // other event payloads
+        /** 自定义数据 */
         data: any;
         delta: number;
         error: string;
@@ -1591,19 +1592,100 @@ declare namespace createjs {
          */
         arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): Graphics;
         /**
-         * 使用指定的图像开始填充图案。这将结束当前的子路径。一个微小的API方法“bf”也存在。
+         * 使用指定的图像开始填充图案。这将结束当前的子路径。简短写法"bf"。
          * @param image 用于填充的图像源（Image, Canvas, 或 Video），图像源必须要加载完成才能用于填充，否则填充为空。
          * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。请注意，Firefox不支持“repeat-x”或“repeat-y”（最新测试在FF 20.0中），默认为“repeat”。
          * @param matrix 
          * @returns 返回Graphics实例（用于链式调用）
          */
         beginBitmapFill(image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, repetition?: string, matrix?: Matrix2D): Graphics;
+        /**
+         * 使用指定的图像开始填充图案。这将结束当前的子路径。请注意，与位图填充不同，由于画布API中的限制，笔划当前不支持矩阵参数。简短写法"bs"。
+         * @param image 用于填充的图像源（Image, Canvas, 或 Video），图像源必须要加载完成才能用于填充，否则填充为空。
+         * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         beginBitmapStroke(image: Object, repetition?: string): Graphics;
+        /**
+         * 使用指定颜色开始填充。这将结束当前的子路径。简短写法"f"。
+         * @param color CSS兼容的颜色值（例如"red"、"#FF0000"或"rgba(255,0,0,0.5)"）。设置为null将导致无填充。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         beginFill(color: string): Graphics;
+        /**
+         * 开始由线（x0，y0）到（x1，y1）定义的线性梯度填充。这将结束当前的子路径。
+         * 例如，以下代码定义了一个从20px到120px的黑白垂直渐变，并绘制了一个正方形来显示它：
+         * ```js
+         * myGraphics.beginLinearGradientFill(["#000","#FFF"], [0, 1], 0, 20, 0, 120).drawRect(20, 20, 120, 120);
+         * ```
+         * 简短写法lf
+         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
+         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1，0.9]将第一种颜色绘制为10%，然后插值为90%的第二种颜色。
+         * @param x0 定义定义渐变方向和大小的线的第一个点的位置。
+         * @param y0 定义定义渐变方向和大小的线的第一个点的位置。
+         * @param x1 定义定义渐变方向和大小的线的第二个点的位置。
+         * @param y1 定义定义渐变方向和大小的线的第二个点的位置。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         beginLinearGradientFill(colors: string[], ratios: number[], x0: number, y0: number, x1: number, y1: number): Graphics;
+        /**
+         * 开始由线（x0，y0）到（x1，y1）定义的线性梯度笔划。这将结束当前的子路径。例如，以下代码定义了一个从20px到120px的黑白垂直渐变，并绘制了一个正方形来显示它：
+         * ```js
+         * myGraphics.setStrokeStyle(10).
+         *     beginLinearGradientStroke(["#000","#FFF"], [0, 1], 0, 20, 0, 120).drawRect(20, 20, 120, 120);
+         * ```
+         * 简短写法ls
+         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
+         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1,0.9]将第一种颜色绘制为10%，然后插值为90%的第二种颜色。
+         * @param x0 定义定义渐变方向和大小的线的第一个点的位置。
+         * @param y0 定义定义渐变方向和大小的线的第一个点的位置。
+         * @param x1 定义定义渐变方向和大小的线的第二个点的位置。
+         * @param y1 定义定义渐变方向和大小的线的第二个点的位置。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         beginLinearGradientStroke(colors: string[], ratios: number[], x0: number, y0: number, x1: number, y1: number): Graphics;
+        /**
+         * 开始径向渐变填充。这将结束当前的子路径。例如，以下代码定义了一个以(100, 100)为中心、半径为50的红色到蓝色的径向渐变，并绘制了一个圆来显示它：
+         * ```js
+         * myGraphics.beginRadialGradientFill(["#F00","#00F"], [0, 1], 100, 100, 0, 100, 100, 50).drawCircle(100, 100, 50);
+         * ```
+         * 简短写法rf
+         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
+         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1,0.9]将第一种颜色绘制为10%，然后插值为90%的第二种颜色。
+         * @param x0 定义渐变的内圈的中心位置。
+         * @param y0 定义渐变的内圈的中心位置。
+         * @param r0 定义渐变的内圈半径。
+         * @param x1 定义渐变的外圆的中心位置。
+         * @param y1 定义渐变的外圆的中心位置。
+         * @param r1 定义渐变的外圆半径。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         beginRadialGradientFill(colors: string[], ratios: number[], x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): Graphics;
+        /**
+         * 开始径向渐变笔划。这将结束当前的子路径。例如，以下代码定义了一个以(100, 100)为中心、半径为50的红色到蓝色的径向渐变，并绘制了一个矩形来显示它：
+         * ```js
+         * myGraphics.setStrokeStyle(10)
+         *     .beginRadialGradientStroke(["#F00","#00F"], [0, 1], 100, 100, 0, 100, 100, 50)
+         *     .drawRect(50, 90, 150, 110);
+         * ```
+         * 简单写法rs
+         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
+         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1,0.9]将第一种颜色绘制为10%，然后插值到90%的第二种颜色，然后将第二种色彩绘制为100%。
+         * @param x0 定义渐变的内圈的中心位置。
+         * @param y0 定义渐变的内圈的中心位置。
+         * @param r0 定义渐变的内圈半径。
+         * @param x1 定义渐变的外圆的中心位置。
+         * @param y1 定义渐变的外圆的中心位置。
+         * @param r1 定义渐变的外圆半径。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         beginRadialGradientStroke(colors: string[], ratios: number[], x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): Graphics;
+        /**
+         * 以指定的颜色开始笔划。这将结束当前的子路径。
+         * 简短写法"s"。
+         * @param color CSS兼容的颜色值（例如"#FF0000","red"或"rgba(255,0,0,0.5)"）。设置为null将不会导致笔划。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         beginStroke(color: string): Graphics;
         bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): Graphics;
         clear(): Graphics;
