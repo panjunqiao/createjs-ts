@@ -1687,25 +1687,189 @@ declare namespace createjs {
          * @returns 返回Graphics实例（用于链式调用）
          */
         beginStroke(color: string): Graphics;
+        /**
+         * 使用控制点(cp1x,cp1y)和(cp2x,cp2y)从当前绘图点到(x,y)绘制贝塞尔曲线。
+         * 有关详细信息，请阅读[whatwg](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-beziercurveto)规范。
+         * 简单写法"bt"。
+         * @param cp1x 
+         * @param cp1y 
+         * @param cp2x 
+         * @param cp2y 
+         * @param x 
+         * @param y 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): Graphics;
+        /**
+         * 清除所有绘图指令，有效重置此Graphics实例。任何线条和填充样式都需要重新定义，以便在明确的调用后绘制形状。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         clear(): Graphics;
+        /**
+         * 返回此Graphics实例的克隆。请注意，单个命令对象不会被克隆。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         clone(): Graphics;
+        /**
+         * 关闭当前路径，有效地从当前绘图点绘制一条线到自上次设置填充或笔划以来指定的第一个绘图点。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         closePath(): Graphics;
+        /**
+         * 将熟悉的ActionScript curveTo（）方法映射到功能相似的{@link quadraticCurveTo}方法。
+         * 绘制贝塞尔曲线，从当前绘图点到目标点(x,y)，使用控制点(cpx,cpy)。
+         * @param cpx 控制点坐标
+         * @param cpy 控制点坐标
+         * @param x 目标点坐标
+         * @param y 目标点坐标
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         curveTo(cpx: number, cpy: number, x: number, y: number): Graphics;
+        /**
+         * 将压缩的编码路径字符串解码为一系列绘图指令。这种格式不是人类可读的，而是供创作工具使用的。该格式使用base64字符集，每个字符代表6位，来定义一系列绘图命令。
+         * 
+         * 每个命令由一个“标题”字符组成，后面是可变数量的交替x和y位置值。
+         * 从左到右读取标头位（最高有效位到最低有效位）：位1到3指定操作类型（0-moveTo、1-lineTo、2-quadraticCurveTo、3-bezierCurveTo、4-closePath、5-7未使用）。
+         * 位4表示位置值是使用12位（2个字符）还是18位（3个字符），其中一位表示后者。位5和6当前未使用。
+         * 
+         * 标题后面是一系列0（closePath）、2（moveTo、lineTo）、4（quadraticCurveTo）或6（bezierCurveTo”）参数。
+         * 这些参数是由2或3个字符表示的交替x/y位置（如命令char中的第4位所示）。这些字符由1位符号（1为负，0为正）和11（2个字符）或17（3个字符）位整数值组成。
+         * 所有位置值都以十分之一像素为单位。除非移动操作是绝对的，否则该值是前一个x或y位置的增量（视情况而定）。
+         * 
+         * 例如，字符串"A3cAAMAu4AAA"表示从-150,0开始到150,0结束的行。A-比特000000。前3位(000)表示moveTo操作。第4位(0)表示每个参数2个字符。
+         * n0-1110111011100。绝对x位置为-150.0px。第一位表示负值，其余位表示十分之1500个像素。AA-000000000000。绝对y位置为0。
+         * I-001100。前3位(001)表示lineTo操作。第4位(1)表示每个参数3个字符。4000001110111000澳元。300.0px的x增量，加上之前的x值-150.0px，得到+150.0px的绝对位置。
+         * AAA-0000000000000000000。y增量值为0。
+         * 简短写法"p"。
+         * @param str 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         decodePath(str: string): Graphics;
-        draw(ctx: CanvasRenderingContext2D): void;
+        /**
+         * 将显示对象绘制到指定的上下文中，忽略其可见、alpha、阴影和变换。如果处理了绘图，则返回true（对于覆盖功能很有用）。
+         * 
+         * 注意：此方法主要用于内部使用，但可能对高级用途有用。
+         * @param ctx 要绘制的画布2D上下文对象。
+         * @param data 传递给图形命令exec方法的可选数据。当从Shape实例调用时，形状将自己作为数据参数传递。这可以由自定义图形命令用于插入上下文数据。
+         */
+        draw(ctx: CanvasRenderingContext2D,data:any): void;
+        /**
+         * 仅绘制为此Graphics实例描述的路径，跳过任何非路径指令，包括填充和笔划描述。例如，用于DisplayObject.mask绘制剪切路径。
+         * 
+         * 注意：此方法主要用于内部使用，但可能对高级用途有用。
+         * @param ctx 要绘制的画布2D上下文对象。
+         */
         drawAsPath(ctx: CanvasRenderingContext2D): void;
+        /**
+         * 在(x,y)处绘制具有指定半径的圆。
+         * ```js
+         * var g = new createjs.Graphics();
+         * g.setStrokeStyle(1);
+         * g.beginStroke(createjs.Graphics.getRGB(0,0,0));
+         * g.beginFill(createjs.Graphics.getRGB(255,0,0));
+         * g.drawCircle(0,0,3);
+         * 
+         * var s = new createjs.Shape(g);
+         * s.x = 100;
+         * s.y = 100;
+         * 
+         * stage.addChild(s);
+         * stage.update();
+         * ```
+         * 简短写法"dc"。
+         * @param x 原点坐标
+         * @param y 原点坐标
+         * @param radius 半径
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         drawCircle(x: number, y: number, radius: number): Graphics;
+        /**
+         * 绘制具有指定宽度（w）和高度（h）的椭圆。与drawCircle类似，只是宽度和高度可以不同。
+         * 
+         * 简短写法"de"。
+         * @param x 椭圆的x轴坐标点。请注意，这与从中心绘制的drawCircle不同。
+         * @param y 椭圆的y轴坐标点。请注意，这与从中心绘制的drawCircle不同。
+         * @param w 椭圆的高度（水平直径）。水平半径将是这个数字的一半。
+         * @param h 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         drawEllipse(x: number, y: number, w: number, h: number): Graphics;
+        /**
+         * 如果pointSize大于0，则绘制星形；如果pointSize为0，则使用指定的点数绘制正多边形。例如，以下代码将绘制一个熟悉的以100、100为中心、半径为50的五角星形状：
+         * ```js
+         * myGraphics.beginFill("#FF0").drawPolyStar(100, 100, 50, 5, 0.6, -90);
+         * // Note: -90 makes the first point vertical
+         * ```
+         * 简短写法"dp"。
+         * @param x 形状中心的位置。
+         * @param y 形状中心的位置。
+         * @param radius 形状的外半径。
+         * @param sides 星形或多边形边上的点数。
+         * @param pointSize 星点的深度或“尖锐度”。pointSize为0将绘制一个正多边形（没有点），pointSize为1将不绘制任何内容，因为点是无限尖的。
+         * @param angle 第一个点/角的角度。例如，值为0时，第一个点将直接绘制在中心的右侧。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         drawPolyStar(x: number, y: number, radius: number, sides: number, pointSize: number, angle: number): Graphics;
+        /**
+         * 将熟悉的ActionScript drawRect()方法映射到功能类似的rect方法。
+         * @param x 
+         * @param y 
+         * @param w 
+         * @param h 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         drawRect(x: number, y: number, w: number, h: number): Graphics;
+        /**
+         * 绘制具有指定半径的所有角的圆角矩形。
+         * @param x 
+         * @param y 
+         * @param w 宽度
+         * @param h 高度
+         * @param radius 圆角半径
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         drawRoundRect(x: number, y: number, w: number, h: number, radius: number): Graphics;
+        /**
+         * 绘制具有不同角半径的圆角矩形。支持正角半径和负角半径。
+         * 简短写法"rc"。
+         * @param x 
+         * @param y 
+         * @param w 
+         * @param h 
+         * @param radiusTL 
+         * @param radiusTR 
+         * @param radiusBR 
+         * @param radisBL 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         drawRoundRectComplex(x: number, y: number, w: number, h: number, radiusTL: number, radiusTR: number, radiusBR: number, radisBL: number): Graphics;
+        /**
+         * 结束当前子路径，并开始一个没有填充的新路径。功能上与beginFill（null）相同。
+         * 简短写法"ef"。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         endFill(): Graphics;
+        /**
+         * 结束当前子路径，并开始一条没有笔划的新路径。功能上与beginStroke（null）相同。
+         * 简短写法"es"。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         endStroke(): Graphics;
+        /**
+         * 根据指定的HSL数字颜色值，以"hsla(360100100,1.0)"的格式返回CSS兼容的颜色字符串，或者如果alpha为空，则以"HSL(360100100)"的形式返回。
+         * ```js
+         * createjs.Graphics.getHSL(150, 100, 70);
+         * // Returns "hsl(150,100,70)"
+         * ```
+         * @param hue 颜色的色调分量，介于0和360之间。
+         * @param saturation 颜色的饱和度分量，介于0和100之间。
+         * @param lightness 颜色的亮度分量，介于0和100之间。
+         * @param alpha 颜色的alpha分量，其中0表示完全透明，1表示完全不透明。
+         * @returns 基于指定HSL数字颜色值的CSS兼容颜色字符串，格式为"hsla(360100100,1.0)"，或者如果alpha为空，则格式为"hsl(360100100)"。
+         */
         static getHSL(hue: number, saturation: number, lightness: number, alpha?: number): string;
         /**
-         * @deprecated - use the instructions property instead
+         * @deprecated - 使用{@link instructions}属性代替
          */
         getInstructions(): Object[];
         static getRGB(r: number, g: number, b: number, alpha?: number): string;
