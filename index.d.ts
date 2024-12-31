@@ -1872,6 +1872,18 @@ declare namespace createjs {
          * @deprecated - 使用{@link instructions}属性代替
          */
         getInstructions(): Object[];
+        /**
+         * 返回一个基于指定RGB数字颜色值的CSS兼容颜色字符串，格式为"rgba(255,255,255,1.0)"，或者如果alpha为空，则格式为"rgb(255,255,255)"。例如，
+         * ```js
+         * createjs.Graphics.getRGB(50, 100, 150, 0.5);
+         * // Returns "rgba(50,100,150,0.5)"
+         * ```
+         * 它还支持将单个十六进制颜色值作为第一个参数传递，将可选的alpha值作为第二个参数传递。例如，
+         * @param r 
+         * @param g 
+         * @param b 
+         * @param alpha 
+         */
         static getRGB(r: number, g: number, b: number, alpha?: number): string;
         inject(callback: (data: any) => any,  data: any): Graphics; // deprecated
         isEmpty(): boolean;
