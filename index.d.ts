@@ -1592,7 +1592,9 @@ declare namespace createjs {
          */
         arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): Graphics;
         /**
-         * 使用指定的图像开始填充图案。这将结束当前的子路径。简短写法"bf"。
+         * 使用指定的图像开始填充图案。这将结束当前的子路径。
+         * 
+         * 简短写法"bf"。
          * @param image 用于填充的图像源（Image, Canvas, 或 Video），图像源必须要加载完成才能用于填充，否则填充为空。
          * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。请注意，Firefox不支持“repeat-x”或“repeat-y”（最新测试在FF 20.0中），默认为“repeat”。
          * @param matrix 
@@ -1607,7 +1609,9 @@ declare namespace createjs {
          */
         beginBitmapStroke(image: Object, repetition?: string): Graphics;
         /**
-         * 使用指定颜色开始填充。这将结束当前的子路径。简短写法"f"。
+         * 使用指定颜色开始填充。这将结束当前的子路径。
+         * 
+         * 简短写法"f"。
          * @param color CSS兼容的颜色值（例如"red"、"#FF0000"或"rgba(255,0,0,0.5)"）。设置为null将导致无填充。
          * @returns 返回Graphics实例（用于链式调用）
          */
@@ -1682,6 +1686,7 @@ declare namespace createjs {
         beginRadialGradientStroke(colors: string[], ratios: number[], x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): Graphics;
         /**
          * 以指定的颜色开始笔划。这将结束当前的子路径。
+         * 
          * 简短写法"s"。
          * @param color CSS兼容的颜色值（例如"#FF0000","red"或"rgba(255,0,0,0.5)"）。设置为null将不会导致笔划。
          * @returns 返回Graphics实例（用于链式调用）
@@ -1740,6 +1745,7 @@ declare namespace createjs {
          * n0-1110111011100。绝对x位置为-150.0px。第一位表示负值，其余位表示十分之1500个像素。AA-000000000000。绝对y位置为0。
          * I-001100。前3位(001)表示lineTo操作。第4位(1)表示每个参数3个字符。4000001110111000澳元。300.0px的x增量，加上之前的x值-150.0px，得到+150.0px的绝对位置。
          * AAA-0000000000000000000。y增量值为0。
+         * 
          * 简短写法"p"。
          * @param str 
          * @returns 返回Graphics实例（用于链式调用）
@@ -1831,6 +1837,7 @@ declare namespace createjs {
         drawRoundRect(x: number, y: number, w: number, h: number, radius: number): Graphics;
         /**
          * 绘制具有不同角半径的圆角矩形。支持正角半径和负角半径。
+         * 
          * 简短写法"rc"。
          * @param x 
          * @param y 
@@ -1845,12 +1852,14 @@ declare namespace createjs {
         drawRoundRectComplex(x: number, y: number, w: number, h: number, radiusTL: number, radiusTR: number, radiusBR: number, radisBL: number): Graphics;
         /**
          * 结束当前子路径，并开始一个没有填充的新路径。功能上与beginFill（null）相同。
+         * 
          * 简短写法"ef"。
          * @returns 返回Graphics实例（用于链式调用）
          */
         endFill(): Graphics;
         /**
          * 结束当前子路径，并开始一条没有笔划的新路径。功能上与beginStroke（null）相同。
+         * 
          * 简短写法"es"。
          * @returns 返回Graphics实例（用于链式调用）
          */
@@ -1879,18 +1888,82 @@ declare namespace createjs {
          * // Returns "rgba(50,100,150,0.5)"
          * ```
          * 它还支持将单个十六进制颜色值作为第一个参数传递，将可选的alpha值作为第二个参数传递。例如，
-         * @param r 
-         * @param g 
-         * @param b 
-         * @param alpha 
+         * ```js
+         * createjs.Graphics.getRGB(0xFF00FF, 0.2);
+         * // Returns "rgba(255,0,255,0.2)"
+         * ```
+         * @param r 颜色的红色分量，介于0和0xFF(255)之间。
+         * @param g 颜色的绿色分量，介于0和0xFF(255)之间。
+         * @param b 颜色的蓝色分量，介于0和0xFF(255)之间。
+         * @param alpha 颜色的alpha分量，其中0表示完全透明，1表示完全不透明。
+         * @returns 基于"rgba（255,255,255,1.0)"格式的指定RGB数字颜色值的CSS兼容颜色字符串，或者如果alpha为空，则采用"RGB(255,255,255)"格式。
          */
         static getRGB(r: number, g: number, b: number, alpha?: number): string;
+        /**
+         * 该方法已经弃用。
+         * @param callback 
+         * @param data 
+         */
         inject(callback: (data: any) => any,  data: any): Graphics; // deprecated
+        /**
+         * 如果此Graphics实例没有绘图命令，则返回true。
+         * @returns 如果此Graphics实例没有绘图命令，则返回true。
+         */
         isEmpty(): boolean;
+        /**
+         * 从当前绘图点到指定位置绘制一条线，该位置将成为新的当前绘图点。请注意，您必须在首次lineTo()之前调用moveTo设置绘制始点。
+         * 
+         * 简短写法"lt"。
+         * 
+         * 有关详细信息，请阅读[whatwg](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#complex-shapes-(paths))规范。
+         * @param x 
+         * @param y 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         lineTo(x: number, y: number): Graphics;
+        /**
+         * 将绘图点移动到指定位置。
+         * 
+         * 简短写法"mt"。
+         * @param x
+         * @param y
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         moveTo(x: number, y: number): Graphics;
+        /**
+         * 使用控制点(cpx,cpy)从当前绘图点绘制到(x,y)的二次曲线。有关详细信息，请阅读[whatwg](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-quadraticcurveto)规范。
+         * 
+         * 简短写法"qt"。
+         * @param cpx 
+         * @param cpy 
+         * @param x 
+         * @param y 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): Graphics;
+        /**
+         * 使用当前填充和/或笔划在（x，y）处绘制具有指定宽度和高度的矩形。
+         * 有关详细信息，请阅读[whatwg](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-rect)规范。
+         * @param x 
+         * @param y 
+         * @param w 
+         * @param h 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         rect(x: number, y: number, w: number, h: number): Graphics;
+        /**
+         * 设置笔划样式。与所有绘图方法一样，这可以链接，因此您可以在一行代码中定义笔划样式和颜色，如下所示：
+         * ```js
+         * myGraphics.setStrokeStyle(8,"round").beginStroke("#F00");
+         * ```
+         * 简短写法"ss"。
+         * @param thickness 笔划的宽度。
+         * @param caps 指示线条末端收尾类型。"butt"、"round"或"square"。默认为"butt"。还接受数值0(butt)、1(round)和2(square)一起使用。
+         * @param joints 指定两条线相交处应使用的接头类型。"bevel"、"round"或"miter"中的一种。默认为"miter"。还接受值0(bevel)、1(round)和2(miter)一起使用。
+         * @param miterLimit 如果将接头设置为斜接("miter")，则可以指定斜接限制比率，该比率控制斜接接头将被剪裁的点。
+         * @param ignoreScale 如果为真，则无论活动变换如何，笔划都将以指定的厚度绘制。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         setStrokeStyle(thickness: number, caps?: string | number, joints?: string | number, miterLimit?: number, ignoreScale?: boolean): Graphics;
         setStrokeDash(segments?: number[], offset?: number): Graphics;
         store(): Graphics;
