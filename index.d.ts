@@ -1965,11 +1965,57 @@ declare namespace createjs {
          * @returns 返回Graphics实例（用于链式调用）
          */
         setStrokeStyle(thickness: number, caps?: string | number, joints?: string | number, miterLimit?: number, ignoreScale?: boolean): Graphics;
+        /**
+         * 设置或清除笔划破折号图案。
+         * ```js
+         * myGraphics.setStrokeDash([20, 10], 0);
+         * ```
+         * 简短写法"sd"。
+         * @param segments 指定虚线图案的数组，在直线和间隙之间交替。例如，[20,10]将创建一个20像素线的图案，它们之间有10个像素的间隙。传递null或空数组将清除现有的笔划破折号。
+         * @param offset 虚线图案的偏移。例如，您可以增加此值以创建“行进的蚂蚁”效果。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         setStrokeDash(segments?: number[], offset?: number): Graphics;
+        /**
+         * 存储所有图形命令，以便在未来的绘图中不会执行。第二次调用store（）将添加到现有存储中。这也会影响drawAsPath()。
+         * 
+         * 这在以迭代方式创建矢量图形（例如生成艺术）的情况下很有用，这样只需要绘制新的图形（这可以提供巨大的性能优势），但您希望保留所有矢量指令以供以后使用（例如缩放、修改或导出）。
+         * 
+         * 请注意，调用store（）将强制活动路径（如果有的话）以类似于更改填充或笔划的方式结束。
+         * 
+         * 例如，考虑一个用户用鼠标绘制线条的应用程序。
+         * 当每个线段（或线段集合）被添加到形状中时，可以使用updateCache对其进行光栅化，然后进行存储，以便在调整应用程序大小或导出到SVG时可以以不同的比例重新绘制。
+         * ```js
+         * // set up cache:
+         * myShape.cache(0,0,500,500,scale);
+         * 
+         * // when the user drags, draw a new line:
+         * myShape.graphics.moveTo(oldX,oldY).lineTo(newX,newY);
+         * // then draw it into the existing cache:
+         * myShape.updateCache("source-over");
+         * // store the new line, so it isn't redrawn next time:
+         * myShape.store();
+         * 
+         * // then, when the window resizes, we can re-render at a different scale:
+         * // first, unstore all our lines:
+         * myShape.unstore();
+         * // then cache using the new scale:
+         * myShape.cache(0,0,500,500,newScale);
+         * // finally, store the existing commands again:
+         * myShape.store();
+         * ```
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         store(): Graphics;
+        /**
+         * 返回此对象的字符串表示形式。
+         */
         toString(): string;
+        /**
+         * 取消存储以前使用store存储的任何图形命令，以便在后续绘图调用中执行。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         unstore(): Graphics;
-
 
         // tiny API - short forms of methods above
         a(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean): Graphics;
