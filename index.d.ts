@@ -1500,7 +1500,77 @@ declare namespace createjs {
         getBounds(): Rectangle;
         toString(): string;
     }
-
+    /**
+     * Graphics类公开了一个易于使用的API，用于生成矢量绘图指令并将其绘制到指定的上下文中。
+     * 请注意，您可以通过直接调用{@link draw}来使用Graphics，而不依赖于EaselJS框架，或者它可以与{@link Shape}对象一起使用，在EaselJS显示列表的上下文中绘制矢量图形。
+     * 
+     * 使用图形对象有两种方法：在图形实例("Graphics API")上调用方法，或实例化图形命令对象并通过{@link append}将其添加到图形队列。
+     * 前者抽象了后者，简化了开始和结束路径、填充和笔划。
+     * ```js
+     * var g = new createjs.Graphics();
+     * g.setStrokeStyle(1);
+     * g.beginStroke("#000000");
+     * g.beginFill("red");
+     * g.drawCircle(0,0,30);
+     * ```
+     * Graphics中的所有绘图方法都返回Graphics实例，因此它们可以链接在一起。例如，以下代码行将生成用红色笔划和蓝色填充绘制矩形的指令：
+     * ```js
+     * myGraphics.beginStroke("red").beginFill("blue").drawRect(20, 20, 100, 50);
+     * ```
+     * 每个图形API调用都会生成一个命令对象（请参见下文）。要创建的最后一个命令可以通过{@link command}访问：
+     * ```js
+     * var fillCommand = myGraphics.beginFill("red").command;
+     * // ... later, update the fill style/color:
+     * fillCommand.style = "blue";
+     * // or change it to a bitmap fill:
+     * fillCommand.bitmap(myImage);
+     * ```
+     * 为了更直接地控制渲染，您可以直接实例化命令对象并将其附加到图形队列中。在这种情况下，您需要手动管理路径创建，并确保填充/笔划应用于定义的路径：
+     * ```js
+     * // start a new path. Graphics.beginCmd is a reusable BeginPath instance:
+     * myGraphics.append(createjs.Graphics.beginCmd);
+     * // we need to define the path before applying the fill:
+     * var circle = new createjs.Graphics.Circle(0,0,30);
+     * myGraphics.append(circle);
+     * // fill the path we just defined:
+     * var fill = new createjs.Graphics.Fill("red");
+     * myGraphics.append(fill);
+     * ```
+     * 这些方法可以一起使用，例如插入自定义命令：
+     * ```js
+     * myGraphics.beginFill("red");
+     * var customCommand = new CustomSpiralCommand(etc);
+     * myGraphics.append(customCommand);
+     * myGraphics.beginFill("blue");
+     * myGraphics.drawCircle(0, 0, 30);
+     * ```
+     * 有关创建自定义命令的更多信息，请参阅{@link append}。
+     * 
+     * ### 缩写 API
+     * 
+     * Graphics类还包括一个“缩写的API”，这是一个或两个字母的方法，是所有Graphics方法的快捷方式。
+     * 这些方法非常适合创建紧凑的指令，CreateJS工具包使用这些方法生成可读代码。所有缩写方法都标记为受保护，因此您可以通过在文档中启用受保护的描述来查看它们。
+     * |缩写|方法|缩写|方法|
+     * |---|---|---|---|
+     * |mt|{@link moveTo}|lt|{@link lineTo}|
+     * |a/at|{@link arc}/{@link arcTo}|bt|{@link bezierCurveTo}|
+     * |qt|{@link quadraticCurveTo}(或 {@link curveTo})|r|{@link rect}|
+     * |cp|{@link closePath}|c|{@link clear}|
+     * |f|{@link beginFill}|lf|{@link beginLinearGradientFill}|
+     * |rf|{@link beginRadialGradientFill}|bf|{@link beginBitmapFill}|
+     * |ef|{@link endFill}|ss/sd|{@link setStrokeStyle}/{@link setStrokeDash}|
+     * |s|{@link beginStroke}|ls|{@link beginLinearGradientStroke}|
+     * |rs|{@link beginRadialGradientStroke}|bs|{@link beginBitmapStroke}|
+     * |es|{@link endStroke}|dr|{@link drawRect}|
+     * |rr|{@link drawRoundRect}|rc|{@link drawRoundRectComplex}|
+     * |dc|{@link drawCircle}|de|{@link drawEllipse}|
+     * |dp|{@link drawPolyStar}|p|{@link decodePath}|
+     * 
+     * 这里是上面的例子，使用缩写的API代替。
+     * ```js
+     * myGraphics.s("red").f("blue").r(20, 20, 100, 50);
+     * ```
+     */
     class Graphics {
         constructor();
 
@@ -1511,11 +1581,11 @@ declare namespace createjs {
         static beginCmd: Graphics.BeginPath;
         /** 
          * 保存对创建或附加的最后一个命令的引用。例如，您可以保留对Fill命令的引用，以便稍后使用以下命令动态更新颜色：
-         * 
-         *     var myFill = myGraphics.beginFill("red").command;
-         *     // update color later:
-         *     myFill.style = "yellow";
-         * 
+         * ```js
+         * var myFill = myGraphics.beginFill("red").command;
+         * // update color later:
+         * myFill.style = "yellow";
+         * ```
          */
         command: Object;
         /** 
@@ -1526,16 +1596,16 @@ declare namespace createjs {
         instructions: Object[]; // array of graphics command objects (Graphics.Fill, etc)
         /** 
          * 将setStrokeStyle的caps参数的数值映射到相应的字符串值。这主要用于小型API。映射如下：0到“对接”，1到“圆形”，2到“方形”。例如，要将线条大写设置为“方形”：
-         * 
-         *     myGraphics.ss(16, 2);
-         * 
+         * ```js
+         * myGraphics.ss(16, 2);
+         * ```
          */
         static STROKE_CAPS_MAP: string[];
         /** 
          * 将setStrokeStyle的关节参数的数值映射到相应的字符串值。这主要用于小型API。映射如下：0到“斜接”，1到“圆形”，2到“斜面”。例如，要将线接头设置为“斜面”：
-         * 
-         *     myGraphics.ss(16, 0, 2);
-         * 
+         * ```js
+         * myGraphics.ss(16, 0, 2);
+         * ```
          */
         static STROKE_JOINTS_MAP: string[];
 
