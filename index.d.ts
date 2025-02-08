@@ -1567,11 +1567,14 @@ declare namespace createjs {
         append(command: Object, clean?: boolean): Graphics;
         /**
          * 绘制一条由半径、startAngle和endAngle参数定义的弧，以位置（x，y）为中心。
+         * 
          * 例如，要绘制一个以（100100）为中心、半径为20的完整圆：
          * ```js
          * arc(100, 100, 20, 0, Math.PI*2);
          * ```
-         * 有关详细信息，请阅读whatwg规范。一个微小的API方法“A”也存在。
+         * 有关详细信息，请阅读whatwg规范。
+         * 
+         * 简短写法"a"。
          * @param x 
          * @param y 
          * @param radius 半径
@@ -1582,7 +1585,9 @@ declare namespace createjs {
          */
         arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean): Graphics;
         /**
-         * 绘制具有指定控制点和半径的圆弧。有关详细信息，请阅读whatwg规范。一个微小的API方法“at”也存在。
+         * 绘制具有指定控制点和半径的圆弧。有关详细信息，请阅读whatwg规范。
+         * 
+         * 简短写法"at"。
          * @param x1 
          * @param y1 
          * @param x2 
@@ -1602,7 +1607,9 @@ declare namespace createjs {
          */
         beginBitmapFill(image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, repetition?: string, matrix?: Matrix2D): Graphics;
         /**
-         * 使用指定的图像开始填充图案。这将结束当前的子路径。请注意，与位图填充不同，由于画布API中的限制，笔划当前不支持矩阵参数。简短写法"bs"。
+         * 使用指定的图像开始填充图案。这将结束当前的子路径。请注意，与位图填充不同，由于画布API中的限制，笔划当前不支持矩阵参数。
+         * 
+         * 简短写法"bs"。
          * @param image 用于填充的图像源（Image, Canvas, 或 Video），图像源必须要加载完成才能用于填充，否则填充为空。
          * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。
          * @returns 返回Graphics实例（用于链式调用）
@@ -1943,6 +1950,9 @@ declare namespace createjs {
         quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): Graphics;
         /**
          * 使用当前填充和/或笔划在（x，y）处绘制具有指定宽度和高度的矩形。
+         * 
+         * 简短写法"r"。
+         * 
          * 有关详细信息，请阅读[whatwg](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-rect)规范。
          * @param x 
          * @param y 
@@ -2018,33 +2028,247 @@ declare namespace createjs {
         unstore(): Graphics;
 
         // tiny API - short forms of methods above
+        /**
+         * {@link arc}的简短写法。
+         * @param x 
+         * @param y 
+         * @param radius 半径
+         * @param startAngle 开始弧度
+         * @param endAngle 结束弧度
+         * @param anticlockwise 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         a(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean): Graphics;
+        /**
+         * {@link arcTo}的简短写法。
+         * @param x1 
+         * @param y1 
+         * @param x2 
+         * @param y2 
+         * @param radius 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         at(x1: number, y1: number, x2: number, y2: number, radius: number): Graphics;
+        /**
+         * {@link beginBitmapFill}的简短写法。
+         * @param image 用于填充的图像源（Image, Canvas, 或 Video），图像源必须要加载完成才能用于填充，否则填充为空。
+         * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。请注意，Firefox不支持“repeat-x”或“repeat-y”（最新测试在FF 20.0中），默认为“repeat”。
+         * @param matrix 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         bf(image: Object, repetition?: string, matrix?: Matrix2D): Graphics;
+        /**
+         * {@link beginBitmapStroke}的简短写法。
+         * @param image 用于填充的图像源（Image, Canvas, 或 Video），图像源必须要加载完成才能用于填充，否则填充为空。
+         * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         bs(image: Object, repetition?: string): Graphics;
+        /**
+         * {@link beginFill}的简短写法。
+         * @param color CSS兼容的颜色值（例如"red"、"#FF0000"或"rgba(255,0,0,0.5)"）。设置为null将导致无填充。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         f(color?: string): Graphics;
+        /**
+         * {@link beginLinearGradientFill}的简短写法。
+         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
+         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1，0.9]将第一种颜色绘制为10%，然后插值为90%的第二种颜色。
+         * @param x0 定义定义渐变方向和大小的线的第一个点的位置。
+         * @param y0 定义定义渐变方向和大小的线的第一个点的位置。
+         * @param x1 定义定义渐变方向和大小的线的第二个点的位置。
+         * @param y1 定义定义渐变方向和大小的线的第二个点的位置。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         lf(colors: string[], ratios: number[], x0: number, y0: number, x1: number, y1: number): Graphics;
+        /**
+         * {@link beginRadialGradientStroke}的简短写法。
+         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
+         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1，0.9]将第一种颜色绘制为10%，然后插值为90%的第二种颜色。
+         * @param x0 定义定义渐变方向和大小的线的第一个点的位置。
+         * @param y0 定义定义渐变方向和大小的线的第一个点的位置。
+         * @param x1 定义定义渐变方向和大小的线的第二个点的位置。
+         * @param y1 定义定义渐变方向和大小的线的第二个点的位置。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         ls(colors: string[], ratios: number[], x0: number, y0: number, x1: number, y1: number): Graphics;
+        /**
+         * {@link beginRadialGradientFill}的简短写法。
+         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
+         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1,0.9]将第一种颜色绘制为10%，然后插值为90%的第二种颜色。
+         * @param x0 定义渐变的内圈的中心位置。
+         * @param y0 定义渐变的内圈的中心位置。
+         * @param r0 定义渐变的内圈半径。
+         * @param x1 定义渐变的外圆的中心位置。
+         * @param y1 定义渐变的外圆的中心位置。
+         * @param r1 定义渐变的外圆半径。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         rf(colors: string[], ratios: number[], x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): Graphics;
+        /**
+         * {@link beginRadialGradientStroke}的简短写法。
+         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
+         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1,0.9]将第一种颜色绘制为10%，然后插值到90%的第二种颜色，然后将第二种色彩绘制为100%。
+         * @param x0 定义渐变的内圈的中心位置。
+         * @param y0 定义渐变的内圈的中心位置。
+         * @param r0 定义渐变的内圈半径。
+         * @param x1 定义渐变的外圆的中心位置。
+         * @param y1 定义渐变的外圆的中心位置。
+         * @param r1 定义渐变的外圆半径。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         rs(colors: string[], ratios: number[], x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): Graphics;
+        /**
+         * {@link beginStroke}的简短写法。
+         * @param color CSS兼容的颜色值（例如"#FF0000","red"或"rgba(255,0,0,0.5)"）。设置为null将不会导致笔划。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         s(color?: string): Graphics;
+        /**
+         * {@link bezierCurveTo}的简短写法。
+         * @param cp1x 
+         * @param cp1y 
+         * @param cp2x 
+         * @param cp2y 
+         * @param x 
+         * @param y 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         bt(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): Graphics;
+        /**
+         * {@link clear}的简短写法。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         c(): Graphics;
+        /**
+         * {@link closePath}的简短写法。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         cp(): Graphics;
+        /**
+         * {@link decodePath}的简短写法。
+         * @param str 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         p(str: string): Graphics;
+        /**
+         * {@link drawCircle}的简短写法。
+         * @param x 原点坐标
+         * @param y 原点坐标
+         * @param radius 半径
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         dc(x: number, y: number, radius: number): Graphics;
+        /**
+         * {@link drawEllipse}的简短写法。
+         * @param x 椭圆的x轴坐标点。请注意，这与从中心绘制的drawCircle不同。
+         * @param y 椭圆的y轴坐标点。请注意，这与从中心绘制的drawCircle不同。
+         * @param w 椭圆的高度（水平直径）。水平半径将是这个数字的一半。
+         * @param h 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         de(x: number, y: number, w: number, h: number): Graphics;
+        /**
+         * {@link drawPolyStar}的简短写法。
+         * @param x 形状中心的位置。
+         * @param y 形状中心的位置。
+         * @param radius 形状的外半径。
+         * @param sides 星形或多边形边上的点数。
+         * @param pointSize 星点的深度或“尖锐度”。pointSize为0将绘制一个正多边形（没有点），pointSize为1将不绘制任何内容，因为点是无限尖的。
+         * @param angle 第一个点/角的角度。例如，值为0时，第一个点将直接绘制在中心的右侧。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         dp(x: number, y: number, radius: number, sides: number, pointSize: number, angle: number): Graphics;
+        /**
+         * {@link drawRect}的简短写法。
+         * @param x 
+         * @param y 
+         * @param w 
+         * @param h 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         dr(x: number, y: number, w: number, h: number): Graphics;
+        /**
+         * {@link drawRoundRect}的简短写法。
+         * @param x 
+         * @param y 
+         * @param w 宽度
+         * @param h 高度
+         * @param radius 圆角半径
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         rr(x: number, y: number, w: number, h: number, radius: number): Graphics;
+        /**
+         * {@link drawRoundRectComplex}的简短写法。
+         * @param x 
+         * @param y 
+         * @param w 
+         * @param h 
+         * @param radiusTL 
+         * @param radiusTR 
+         * @param radiusBR 
+         * @param radisBL 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         rc(x: number, y: number, w: number, h: number, radiusTL: number, radiusTR: number, radiusBR: number, radisBL: number): Graphics;
+        /**
+         * {@link endFill}的简短写法。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         ef(): Graphics;
+        /**
+         * {@link endStroke}的简短写法。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         es(): Graphics;
+        /**
+         * {@link lineTo}的简短写法。
+         * @param x 
+         * @param y 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         lt(x: number, y: number): Graphics;
+        /**
+         * {@link moveTo}的简短写法。
+         * @param x 
+         * @param y 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         mt(x: number, y: number): Graphics;
+        /**
+         * {@link quadraticCurveTo}的简短写法。
+         * @param cpx 
+         * @param cpy 
+         * @param x 
+         * @param y 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         qt(cpx: number, cpy: number, x: number, y: number): Graphics;
+        /**
+         * {@link rect}的简短写法。
+         * @param x 
+         * @param y 
+         * @param w 
+         * @param h 
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         r(x: number, y: number, w: number, h: number): Graphics;
+        /**
+         * {@link setStrokeStyle}的简短写法。
+         * @param thickness 笔划的宽度。
+         * @param caps 指示线条末端收尾类型。"butt"、"round"或"square"。默认为"butt"。还接受数值0(butt)、1(round)和2(square)一起使用。
+         * @param joints 指定两条线相交处应使用的接头类型。"bevel"、"round"或"miter"中的一种。默认为"miter"。还接受值0(bevel)、1(round)和2(miter)一起使用。
+         * @param miterLimit 如果将接头设置为斜接("miter")，则可以指定斜接限制比率，该比率控制斜接接头将被剪裁的点。
+         * @param ignoreScale 如果为真，则无论活动变换如何，笔划都将以指定的厚度绘制。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         ss(thickness: number, caps?: string | number, joints?: string | number, miterLimit?: number, ignoreScale?: boolean): Graphics;
+        /**
+         * {@link setStrokeDash}的简短写法。
+         * @param segments 指定虚线图案的数组，在直线和间隙之间交替。例如，[20,10]将创建一个20像素线的图案，它们之间有10个像素的间隙。传递null或空数组将清除现有的笔划破折号。
+         * @param offset 虚线图案的偏移。例如，您可以增加此值以创建“行进的蚂蚁”效果。
+         * @returns 返回Graphics实例（用于链式调用）
+         */
         sd(segments?: number[], offset?: number): Graphics;
     }
 
