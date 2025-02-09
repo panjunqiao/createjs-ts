@@ -2345,6 +2345,9 @@ declare namespace createjs {
 
     namespace Graphics
     {
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.arc | arc}和{@link Graphics.append | append}。
+         */
         class Arc
         {
             constructor(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: number);
@@ -2357,7 +2360,9 @@ declare namespace createjs {
             x: number;
             y: number;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.arcTo | arcTo}和{@link Graphics.append | append}。
+         */
         class ArcTo
         {
             constructor(x1: number, y1: number, x2: number, y2: number, radius: number);
@@ -2369,12 +2374,20 @@ declare namespace createjs {
             y2: number;
             radius: number;
         }
-
+        /**
+         * 图形命令对象开始新路径。有关更多信息，请参见{@link Graphics}和{@link Graphics.append | append}。
+         */
         class BeginPath
         {
-
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象开始新路径。有关更多信息，请参见{@link Graphics.bezierCurveTo | bezierCurveTo}和{@link Graphics.append | append}。
+         */
         class BezierCurveTo
         {
             constructor(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number);
@@ -2386,8 +2399,15 @@ declare namespace createjs {
             cp2y: number;
             x: number;
             y: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.drawCircle | drawCircle}和{@link Graphics.append | append}。
+         */
         class Circle
         {
             constructor(x: number, y: number, radius: number);
@@ -2396,15 +2416,33 @@ declare namespace createjs {
             x: number;
             y: number;
             radius: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.closePath | closePath}和{@link Graphics.append | append}。
+         */
         class ClosePath
         {
-
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.beginFill | beginFill}和{@link Graphics.append | append}。
+         */
         class Fill
         {
+            /**
+             * 
+             * @param style 有效的Context2D填充样式。
+             * @param matrix 
+             */
             constructor(style: Object, matrix?: Matrix2D);
 
             // properties
@@ -2412,11 +2450,46 @@ declare namespace createjs {
             matrix: Matrix2D;
 
             // methods
-            bitmap(image: HTMLImageElement, repetition?: string): Fill;
+            /**
+             * 创建位图填充样式并将其指定给Fill.style属性。有关更多信息，请参阅{@link Graphics.beginBitmapFill | beginBitmapFill}。
+             * @param image 必须在创建位图填充之前完成加载，否则填充将为空。
+             * @param repetition repeat、repeat-x、repeat-y或者no-repeat的其中一个。默认为repeat。
+             * @returns 返回Fill实例（用于链式调用）
+             */
+            bitmap(image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement, repetition?: string): Fill;
+            /**
+             * 创建线性渐变样式并将其指定给Fill.style属性。有关更多信息，请参阅{@link Graphics.beginLinearGradientFill | beginLinearGradientFill}。
+             * @param colors 
+             * @param ratios 
+             * @param x0 
+             * @param y0 
+             * @param x1 
+             * @param y1 
+             * @returns 返回Fill实例（用于链式调用）
+             */
             linearGradient(colors: number[], ratios: number[], x0: number, y0: number, x1: number, y1: number): Fill;
+            /**
+             * 创建径向渐变样式并将其指定给Fill.style属性。有关更多信息，请参阅{@link Graphics.beginRadialGradientFill | beginRadialGradientFill}。
+             * @param colors 
+             * @param ratios 
+             * @param x0 
+             * @param y0 
+             * @param r0 
+             * @param x1 
+             * @param y1 
+             * @param r1 
+             * @returns 返回Fill实例（用于链式调用）
+             */
             radialGradient(colors: number[], ratios: number[], x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): Fill;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关详细信息，请参见{@link Graphics.lineTo | lineTo}和{@link Graphics.append | append}。有关更多信息，请参见{@link Graphics}和{@link Graphics.append | append}。
+         */
         class LineTo
         {
             constructor(x: number, y: number);
@@ -2424,16 +2497,30 @@ declare namespace createjs {
             // properties
             x: number;
             y: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参阅{@link Graphics.moveTo | moveTo}和{@link Graphics.append | append}。
+         */
         class MoveTo
         {
             constructor(x: number, y: number);
 
             x: number;
             y: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.drawPolyStar | drawPolyStar}和{@link Graphics.append | append}。
+         */
         class PolyStar
         {
             constructor(x: number, y: number, radius: number, sides: number, pointSize: number, angle: number);
@@ -2445,8 +2532,15 @@ declare namespace createjs {
             sides: number;
             x: number;
             y: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.quadraticCurveTo | quadraticCurveTo}和{@link Graphics.append | append}。
+         */
         class QuadraticCurveTo
         {
             constructor(cpx: number, cpy: number, x: number, y: number);
@@ -2456,8 +2550,15 @@ declare namespace createjs {
             cpy: number;
             x: number;
             y: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.rect | rect}和{@link Graphics.append | append}。
+         */
         class Rect
         {
             constructor(x: number, y: number, w: number, h: number);
@@ -2467,8 +2568,15 @@ declare namespace createjs {
             y: number;
             w: number;
             h: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.drawRoundRectComplex | drawRoundRectComplex}和{@link Graphics.append | append}。
+         */
         class RoundRect
         {
             constructor(x: number, y: number, w: number, h: number, radiusTL: number, radiusTR: number, radiusBR: number, radiusBL: number);
@@ -2482,8 +2590,15 @@ declare namespace createjs {
             radiusTR: number;
             radiusBR: number;
             radiusBL: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.beginStroke | beginStroke}和{@link Graphics.append | append}。
+         */
         class Stroke
         {
             constructor(style: Object, ignoreScale: boolean);
@@ -2493,11 +2608,43 @@ declare namespace createjs {
             ignoreScale: boolean;
 
             // methods
+            /**
+             * 创建位图填充样式并将其指定给Stroke.style属性。有关更多信息，请参阅{@link Graphics.beginBitmapStroke | beginBitmapStroke}。
+             * @param image 
+             * @param repetition 
+             */
             bitmap(image: HTMLImageElement, repetition?: string): Stroke;
+            /**
+             * 创建线性渐变样式并将其指定给Stroke.style属性。有关更多信息，请参阅{@link Graphics.beginLinearGradientStroke | beginLinearGradientStroke}。
+             * @param colors 
+             * @param ratios 
+             * @param x0 
+             * @param y0 
+             * @param x1 
+             * @param y1 
+             */
             linearGradient(colors: number[], ratios: number[], x0: number, y0: number, x1: number, y1: number): Stroke;
+            /**
+             * 创建径向渐变样式并将其指定给Stroke.style属性。有关更多信息，请参阅{@link Graphics.beginRadialGradientStroke | beginRadialGradientStroke}。
+             * @param colors 
+             * @param ratios 
+             * @param x0 
+             * @param y0 
+             * @param r0 
+             * @param x1 
+             * @param y1 
+             * @param r1 
+             */
             radialGradient(colors: number[], ratios: number[], x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): Stroke;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.setStrokeStyle | setStrokeStyle}和{@link Graphics.append | append}。
+         */
         class StrokeStyle
         {
             constructor(width: number, caps: string, joints: number, miterLimit: number);
@@ -2507,8 +2654,15 @@ declare namespace createjs {
             joints: string;
             miterLimit: number;
             width: number;
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
-
+        /**
+         * 图形命令对象。有关更多信息，请参见{@link Graphics.setStrokeDash | setStrokeDash}和{@link Graphics.append | append}。
+         */
         class StrokeDash
         {
             constructor(segments:any[], offset:number);
@@ -2516,6 +2670,11 @@ declare namespace createjs {
             // properties
             offset: number;
             segments: any[];
+            /**
+             * 在提供的Canvas上下文中执行Graphics命令。
+             * @param ctx canvas渲染上下文
+             */
+            exec(ctx:CanvasRenderingContext2D): void;
         }
     }
 
