@@ -2924,10 +2924,19 @@ declare namespace createjs {
         mouseMoveOutside: boolean;
 
         // methods
-        /*clone(): MouseEvent;
-        
+        /**
+         * 返回此事件的克隆。
+         * @returns 此事件的克隆。
+         */
+        clone(): MouseEvent;
+        /**
+         * 阻止事件的默认行为。
+         */
+        preventDefault():void;
+
+
         // EventDispatcher mixins
-        addEventListener(type: string, listener: (eventObj: Object) => boolean|void, useCapture?: boolean): Function;
+        /*addEventListener(type: string, listener: (eventObj: Object) => boolean|void, useCapture?: boolean): Function;
         //addEventListener(type: string, listener: (eventObj: Object) => void, useCapture?: boolean): Function;
         addEventListener(type: string, listener: { handleEvent: (eventObj: Object) => boolean|void; }, useCapture?: boolean): Object;
         //addEventListener(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): Object;
