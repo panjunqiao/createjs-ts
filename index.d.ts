@@ -105,10 +105,11 @@ declare namespace createjs {
          */
         clone(): Event;
         /**
-         * 如果事件可取消，则将{@link defaultPrevented}设置为true。反映DOM2事件标准。一般来说，如果事件可取消，则调用preventDefault()将取消与该事件关联的默认行为。
+         * 如果事件可取消，则将{@link defaultPrevented}设置为true。反映DOM2事件标准。一般来说，如果事件可取消，则调用`preventDefault()`将取消与该事件关联的默认行为。
          */
         preventDefault(): void;
         /**
+
          * 通过removeEventListener();删除活动监听器
          * ```js
          * myBtn.addEventListener("click", function(evt) {
@@ -121,11 +122,11 @@ declare namespace createjs {
         /**
          * 提供一种可链接的快捷方式，用于在实例上设置多个属性。
          * @param props 包含要复制到实例的属性的通用对象。
-         * @returns 返回方法被调用的实例（对于链式调用很有用。）
+         * @returns 返回方法被调用的实例（对于链式调用很有用）。
          */
         set(props: Object): Event;
         /**
-         * 将{@link propagationStopped}和{@link immediatePropagationStopped}设置为true。反映DOM事件标准。
+         * 将{@link propagationStopped}和{@link immediatePropagationStopped}设置为true。对应DOM事件标准。
          */
         stopImmediatePropagation(): void;
         /**
@@ -2924,17 +2925,6 @@ declare namespace createjs {
         mouseMoveOutside: boolean;
 
         // methods
-        /**
-         * 返回此事件的克隆。
-         * @returns 此事件的克隆。
-         */
-        clone(): MouseEvent;
-        /**
-         * 阻止事件的默认行为。
-         */
-        preventDefault():void;
-
-
         // EventDispatcher mixins
         /*addEventListener(type: string, listener: (eventObj: Object) => boolean|void, useCapture?: boolean): Function;
         //addEventListener(type: string, listener: (eventObj: Object) => void, useCapture?: boolean): Function;
