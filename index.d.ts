@@ -2677,9 +2677,16 @@ declare namespace createjs {
             exec(ctx:CanvasRenderingContext2D): void;
         }
     }
-
-
-
+    /**
+     * 表示映射变换矩阵，并提供用于构造和连接矩阵的工具。
+     * 该矩阵可以可视化为：
+     * ```js
+     * [ a  c  tx
+     *   b  d  ty
+     *   0  0  1  ]
+     * ```
+     * 注意b和c的位置。
+     */
     class Matrix2D {
         constructor(a?: number, b?: number, c?: number, d?: number, tx?: number, ty?: number);
 
@@ -2694,21 +2701,139 @@ declare namespace createjs {
         ty: number;
 
         // methods
+        /**
+         * 将指定的矩阵属性附加到此矩阵。所有参数都是必需的。这相当于乘法`(this matrix) * (specified matrix)`。
+         * @param a 
+         * @param b 
+         * @param c 
+         * @param d 
+         * @param tx 
+         * @param ty 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         append(a: number, b: number, c: number, d: number, tx: number, ty: number): Matrix2D;
+        /**
+         * 将指定的矩阵附加到此矩阵。这相当于乘法`(this matrix) * (specified matrix)`。
+         * @param matrix 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         appendMatrix(matrix: Matrix2D): Matrix2D;
+        /**
+         * 从指定的显示对象变换属性生成矩阵属性，并将其附加到此矩阵中。例如，您可以使用它来生成表示显示对象变换的矩阵：
+         * ```js
+         * var mtx = new createjs.Matrix2D();
+         * mtx.appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation);
+         * ```
+         * @param x 
+         * @param y 
+         * @param scaleX 
+         * @param scaleY 
+         * @param rotation 
+         * @param skewX 
+         * @param skewY 
+         * @param regX 
+         * @param regY 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         appendTransform(x: number, y: number, scaleX: number, scaleY: number, rotation: number, skewX: number, skewY: number, regX?: number, regY?: number): Matrix2D;
+        /**
+         * 返回Matrix2D实例的克隆。
+         * @returns Matrix2D实例的克隆。
+         */
         clone(): Matrix2D;
+        /**
+         * 将指定矩阵中的所有属性复制到此矩阵。
+         * @param matrix 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         copy(matrix: Matrix2D): Matrix2D;
-        decompose(): {x: number; y: number; scaleX: number; scaleY: number; rotation: number; skewX: number; skewY: number};
-        decompose(target: Object): Matrix2D;
+        /**
+         * 将矩阵分解为变换属性（x、y、scaleX、scaleY和rotation）。请注意，这些值可能与您用于生成矩阵的变换属性不匹配，尽管它们将产生相同的视觉结果。
+         * @param target 要应用转换属性的对象。如果为null，则将返回一个新对象。
+         * @returns 目标，或应用了变换属性的新通用对象。
+         */
+        decompose(target?: Object): {x: number; y: number; scaleX: number; scaleY: number; rotation: number; skewX: number; skewY: number}|Matrix2D;
+        //decompose(target: Object): Matrix2D;
+        /**
+         * 如果此矩阵等于指定的矩阵（所有属性值都相等），则返回true。
+         * @param matrix 要比较的矩阵。
+         */
         equals(matrix: Matrix2D): boolean;
+        /**
+         * 将矩阵的属性设置为恒等式矩阵（应用空变换的矩阵）的属性。
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         identity(): Matrix2D;
+        /**
+         * 反转矩阵，使其执行相反的变换。
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         invert(): Matrix2D;
+        /**
+         * 如果此矩阵等于单位矩阵，则返回true。
+         * @returns 如果此矩阵等于单位矩阵，则返回true。
+         */
         isIdentity(): boolean;
+        /**
+         * 将指定的矩阵属性前置到此矩阵。这相当于乘法`(specified matrix) * (this matrix)`。所有参数都是必需的。
+         * @param a 
+         * @param b 
+         * @param c 
+         * @param d 
+         * @param tx 
+         * @param ty 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         prepend(a: number, b: number, c: number, d: number, tx: number, ty: number): Matrix2D;
+        /**
+         * 将指定的矩阵前置到此矩阵。这相当于乘法`(specified matrix) * (this matrix)`。例如，您可以使用以下公式计算子对象的组合变换：
+         * ```js
+         * var o = myDisplayObject;
+         * var mtx = o.getMatrix();
+         * while (o = o.parent) {
+         *     // prepend each parent's transformation in turn:
+         *     o.prependMatrix(o.getMatrix());
+         * }
+         * ```
+         * @param matrix 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         prependMatrix(matrix: Matrix2D): Matrix2D;
+        /**
+         * 从指定的显示对象变换属性生成矩阵属性，并将其添加到此矩阵之前。例如，您可以使用以下公式计算子对象的组合变换：
+         * ```js
+         * var o = myDisplayObject;
+         * var mtx = new createjs.Matrix2D();
+         * do  {
+         *     // prepend each parent's transformation in turn:
+         *     mtx.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
+         * } while (o = o.parent);
+         * ```
+         * 注意，上面的例子不会考虑{@link transformMatrix}的值。请参阅{@link prependMatrix}的示例，了解如何处理这种情况。
+         * @param x 
+         * @param y 
+         * @param scaleX 
+         * @param scaleY 
+         * @param rotation 
+         * @param skewX 
+         * @param skewY 
+         * @param regX 
+         * @param regY 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         prependTransform(x: number, y: number, scaleX: number, scaleY: number, rotation: number, skewX: number, skewY: number, regX?: number, regY?: number): Matrix2D;
+        /**
+         * 对矩阵应用顺时针旋转变换。
+         * @param angle 旋转角度，单位为度。要使用以弧度为单位的值，请将其乘以`180/Math.PI`。
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         rotate(angle: number): Matrix2D;
+        /**
+         * 对矩阵应用缩放变换。
+         * @param x 水平缩放的比例。例如，值2将使X方向的大小加倍，值0.5将使其减半。
+         * @param y 垂直缩放的比例。
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         scale(x: number, y: number): Matrix2D;
         setValues(a?: number, b?: number, c?: number, d?: number, tx?: number, ty?: number): Matrix2D;
         skew(skewX: number, skewY: number): Matrix2D;
