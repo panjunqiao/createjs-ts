@@ -2835,10 +2835,43 @@ declare namespace createjs {
          * @returns 返回此矩阵。可用于链式调用。
          */
         scale(x: number, y: number): Matrix2D;
+        /**
+         * 在此实例上设置指定值。
+         * @param a 
+         * @param b 
+         * @param c 
+         * @param d 
+         * @param tx 
+         * @param ty 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         setValues(a?: number, b?: number, c?: number, d?: number, tx?: number, ty?: number): Matrix2D;
+        /**
+         * 对矩阵应用斜切变换。
+         * @param skewX 水平倾斜的度数。要使用以弧度为单位的值，请将其乘以`180/Math.PI`。
+         * @param skewY 垂直倾斜的度数。
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         skew(skewX: number, skewY: number): Matrix2D;
+        /**
+         * 返回此对象的字符串表示形式。
+         * @returns 实例的字符串表示。
+         */
         toString(): string;
+        /**
+         * 根据此矩阵变换指定的点。
+         * @param x 
+         * @param y 
+         * @param pt 将结果赋值到该对象。如果省略，将返回具有x/y属性的通用对象。
+         * @returns 返回新的点。
+         */
         transformPoint(x: number, y: number, pt?: Point | Object): Point;
+        /**
+         * 在x和y轴上平移矩阵。
+         * @param x 
+         * @param y 
+         * @returns 返回此矩阵。可用于链式调用。
+         */
         translate(x: number, y: number): Matrix2D;
     }
     /**
