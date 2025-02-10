@@ -3214,7 +3214,13 @@ declare namespace createjs {
          */
         static polar(len:number, angle:number, pt?:Point|Object):Point;
     }
-
+    /**
+     * 表示由点(x,y)和(x+width,y+height)定义的矩形。
+     * ### 示例
+     * ```js
+     * var rect = new createjs.Rectangle(0, 0, 100, 100);
+     * ```
+     */
     class Rectangle {
         constructor(x?: number, y?: number, width?: number, height?: number);
 
@@ -3225,30 +3231,116 @@ declare namespace createjs {
         y: number;
 
         // methods
+        /**
+         * 返回Rectangle实例的克隆。
+         * @returns Rectangle实例的克隆。
+         */
         clone(): Rectangle;
+        /**
+         * 如果此矩形完全包围所描述的点或矩形，则返回true。
+         * @param x 
+         * @param y 
+         * @param width 
+         * @param height 
+         * @returns 如果此矩形完全包围所描述的点或矩形，则返回true。
+         */
         contains(x: number, y: number, width?: number, height?: number): boolean;
+        /**
+         * 将指定矩形的所有属性从指定矩形复制到此矩形。
+         * @param rectangle 从中复制属性的矩形。
+         * @returns 返回此Rectangle实例。可用于链接方法调用。
+         */
         copy(rectangle: Rectangle): Rectangle;
+        /**
+         * 扩展此矩形的边界以包含指定点或矩形。
+         * @param x 
+         * @param y 
+         * @param width 
+         * @param height 
+         * @returns 返回此Rectangle实例。可用于链接方法调用。
+         */
         extend(x: number, y: number, width?: number, height?: number): Rectangle;
+        /**
+         * 返回一个新的矩形，描述此矩形与指定矩形的交集（重叠），如果它们不相交，则返回null。
+         * @param rect 用于计算交集的矩形。
+         * @returns 返回两个矩形的交集或null。
+         */
         intersection(rect: Rectangle): Rectangle;
+        /**
+         * 如果指定的矩形与此矩形相交（有任何重叠），则返回true。
+         * @param rect 用于计算相交的矩形。
+         * @returns 如果指定的矩形与此矩形相交（有任何重叠），则返回true。
+         */
         intersects(rect: Rectangle): boolean;
+        /**
+         * 如果宽度或高度等于或小于0，则返回true。
+         * @returns 如果宽度或高度等于或小于0，则返回true。
+         */
         isEmpty(): boolean;
+        /**
+         * 将指定的填充添加到矩形的边界。
+         * @param top 
+         * @param left 
+         * @param bottom 
+         * @param right 
+         * @returns 返回此Rectangle实例。可用于链接方法调用。
+         */
         pad(top: number, left: number, bottom: number, right: number): Rectangle;
+        /**
+         * 在此实例上设置指定值。
+         * @param x 
+         * @param y 
+         * @param width 
+         * @param height 
+         * @returns 返回此Rectangle实例。可用于链接方法调用。
+         */
         setValues(x?: number, y?: number, width?: number, height?: number): Rectangle;
+        /**
+         * 返回此Rectangle实例的字符串表示形式。
+         * @returns 此Rectangle实例的字符串表示形式。
+         */
         toString(): string;
+        /**
+         * 返回一个新的矩形，其中包含此矩形和指定的矩形。
+         * @param rect 用于计算并集的矩形。
+         * @returns 返回两个矩形的并集。
+         */
         union(rect: Rectangle): Rectangle;
     }
-
-
+    /**
+     * 此类封装了定义阴影所需的属性，以通过`shadow`属性应用于{@link DisplayObject}。
+     * ### 示例
+     * ```js
+     * myImage.shadow = new createjs.Shadow("#000000", 5, 5, 10);
+     * ```
+     */
     class Shadow {
+        /**
+         * 
+         * @param color 阴影的颜色。这可以是任何有效的CSS颜色值。
+         * @param offsetX 阴影的x偏移量（像素）。
+         * @param offsetY 阴影的y偏移量（像素）。
+         * @param blur 阴影的模糊量（像素）。
+         */
         constructor(color: string, offsetX: number, offsetY: number, blur: number);
-
         // properties
         blur: number;
+        /**
+         * 阴影的颜色。这可以是任何有效的CSS颜色值。
+         */
         color: string;
+        /**
+         * 标识阴影对象（所有属性都设置为0）。
+         */
         static identity: Shadow;
+        /**
+         * 阴影的x偏移量（像素）。
+         */
         offsetX: number;
+        /**
+         * 阴影的y偏移量（像素）。
+         */
         offsetY: number;
-
         // methods
         clone(): Shadow;
         toString(): string;
