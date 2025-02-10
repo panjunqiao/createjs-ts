@@ -3434,17 +3434,32 @@ declare namespace createjs {
          */
         paused: boolean;
         /**
-         * 
+         * SpriteSheet 实例用于回放。它包括源图像、帧的尺寸以及帧的数据。有关更多信息，请参阅{@link SpriteSheet}。
          */
         spriteSheet: SpriteSheet;
 
         // methods
+        /**
+         * 使播放头前进。默认情况下，在每个tick都会自动发生。
+         * @param time 以毫秒为单位的时间增量。仅当Sprite或其精灵表设置了帧率时适用。
+         */
         advance(time?: number): void;
+        /**
+         * 返回一个精灵实例的克隆。请注意，克隆的实例之间共享相同的精灵表。
+         * @returns 返回一个Sprite实例。
+         */
         clone(): Sprite;
+        /**
+         * 返回一个Rectangle实例，定义Sprite实例的边界。
+         */
         getBounds(): Rectangle;
+        /**
+         * 
+         */
         gotoAndPlay(frameOrAnimation: string | number): void;
         gotoAndStop(frameOrAnimation: string | number): void;
         play(): void;
+
         set(props: Object): Sprite;
         setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, regX?: number, regY?: number): Sprite;
         stop(): void;
