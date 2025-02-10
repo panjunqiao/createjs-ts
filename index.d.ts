@@ -1201,26 +1201,28 @@ declare namespace createjs {
          * 
          * 并非所有显示对象都可以计算自己的边界（例如形状）。对于这些对象，可以使用 setBounds，以便在计算容器边界时包含它们。
          * 
-         * 1.All        所有显示对象都支持使用setBounds()手动设置边界。同样，使用cache()缓存的显示对象将返回其缓存的边界。手动和缓存边界将覆盖下面列出的自动计算。
-         * 2.Bitmap     返回Bitmap/sourceRect（如果指定）或图像的宽度和高度，从（x=0，y=0）开始延伸。
-         * 3.Sprite     返回当前帧的边界。如果在spritesheet数据中指定了帧注册点，则x/y可能为非零。另请参见getFrameBounds
-         * 4.Container  返回从getBounds()返回非空值的所有子级的聚合（组合）边界。
-         * 5.Shape      当前不支持自动边界计算。使用setBounds()手动定义边界。
-         * 6.Text       返回近似边界。水平值（x/宽度）非常准确，但垂直值（y/高度）则不准确，尤其是在使用textBaseline值而不是“top”时。
-         * 7.BitmapText 返回近似边界。如果spritesheet帧注册点接近（x=0，y=0），则值将更准确。
+         * |对象|说明|
+         * | :--- | :--- |
+         * |All|所有显示对象都支持使用setBounds()手动设置边界。同样，使用cache()缓存的显示对象将返回其缓存的边界。手动和缓存边界将覆盖下面列出的自动计算。|
+         * |Bitmap|返回Bitmap/sourceRect（如果指定）或图像的宽度和高度，从（x=0，y=0）开始延伸。|
+         * |Sprite|返回当前帧的边界。如果在spritesheet数据中指定了帧注册点，则x/y可能为非零。另请参见getFrameBounds|
+         * |Container|返回从getBounds()返回非空值的所有子级的聚合（组合）边界。|
+         * |Shape|当前不支持自动边界计算。使用setBounds()手动定义边界。|
+         * |Text|返回近似边界。水平值（x/宽度）非常准确，但垂直值（y/高度）则不准确，尤其是在使用textBaseline值而不是“top”时。|
+         * |BitmapText|返回近似边界。如果spritesheet帧注册点接近（x=0，y=0），则值将更准确。|
          * 
          * 对于某些对象（例如文本或具有许多子对象的容器），计算边界可能很消耗性能，每次调用getBounds（）时都会重新计算边界。通过显式设置边界，可以防止对静态对象进行重新计算：
-         * 
-         * 		var bounds = obj.getBounds();
-         * 		obj.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
-         * 		// getBounds will now use the set values, instead of recalculating
-         * 
+         * ```js
+         * var bounds = obj.getBounds();
+         * obj.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
+         * // getBounds will now use the set values, instead of recalculating
+         * ```
          * 为了减少内存影响，返回的Rectangle实例可以在内部重用；克隆实例或复制其值（如果需要保留）。
-         * 
-         * 		var myBounds = obj.getBounds().clone();
-         * 		// OR:
-         * 		myRect.copy(obj.getBounds());
-         * 
+         * ```js
+         * var myBounds = obj.getBounds().clone();
+         * // OR:
+         * myRect.copy(obj.getBounds());
+         * ```
          * @returns {Rectangle} 显示对象的矩形边界，如果此对象没有边界，则为null。
          */
         getBounds(): Rectangle;
@@ -3078,24 +3080,61 @@ declare namespace createjs {
          * @default "synched"
          */
         static SYNCHED: string;
+        /**
+         * 与此MovieClip关联的TweenJS时间线。这是在初始化MovieClip实例时自动创建的。动画是通过将TweenJS的Tween实例添加到时间线中而创建的。
+         * ### 示例
+         * ```js
+         * var tween = createjs.Tween.get(target).to({x:0}).to({x:100}, 30);
+         * var mc = new createjs.MovieClip();
+         * mc.timeline.addTween(tween);
+         * ```
+         * 通过使用`tweenInstance.to()`方法切换"_off"属性，可以在时间线中添加和删除元素。请注意，不建议使用`Tween.set`创建MovieClip动画。
+         * 以下示例将在第1帧关闭目标，然后在第2帧重新打开。您可以使用“visible”属性来实现相同的效果。
+         * ```js
+         * var tween = createjs.Tween.get(target).to({_off:false})
+         *     .wait(1).to({_off:true})
+         *     .wait(1).to({_off:false});
+         * ```
+         * @default null
+         */
         timeline: Timeline;
+        /**
+         * 返回此MovieClip的持续时间（秒或者ticks）。
+         * 其实源码是返回`this.timeline.duration`
+         */
         duration: number;
+
         static version: string;
 
+
         // methods
+        /**
+         * 推进时间轴（时间线）游标。默认情况下，每次tick时都会自动发生。
+         * @param time 
+         */
         advance(time?: number): void;
+        /**
+         * MovieClip实例无法克隆。
+         * @deprecated - 不支持
+         */
         clone(): MovieClip; // not supported
         /**
-         * @deprecated - use 'currentLabel' property instead
+         * 将此影片剪辑前进到指定位置或标签，并将暂停设置为false。
+         * @param positionOrLabel 
          */
-        getCurrentLabel(): string;  // deprecated
-        /**
-         * @deprecated - use 'labels' property instead
-         */
-        getLabels(): Object[];
         gotoAndPlay(positionOrLabel: string | number): void;
+        /**
+         * 将此影片剪辑前进到指定位置或标签，并将暂停设置为true。
+         * @param positionOrLabel 
+         */
         gotoAndStop(positionOrLabel: string | number): void;
+        /**
+         * 将暂停设置为false。
+         */
         play(): void;
+        /**
+         * 将暂停设置为true。
+         */
         stop(): void;
     }
 
