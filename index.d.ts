@@ -3137,12 +3137,20 @@ declare namespace createjs {
          */
         stop(): void;
     }
-
+    /**
+     * 此插件与 TweenJS 配合使用，用于防止 startPosition 属性被补间动画影响。
+     */
     class MovieClipPlugin {
         // methods
         tween(tween: Tween, prop: string, value: string | number | boolean, startValues: any[], endValues: any[], ratio: number, wait: Object, end: Object): void;
     }
-
+    /**
+     * 表示二维x/y坐标系上的点。
+     * ### 示例
+     * ```js
+     * var point = new createjs.Point(0, 100);
+     * ```
+     */
     class Point {
         constructor(x?: number, y?: number);
 
@@ -3151,10 +3159,60 @@ declare namespace createjs {
         y: number;
 
         // methods
+        /**
+         * 返回Point实例的克隆。
+         * @returns Point实例的克隆。
+         */
         clone(): Point;
+        /**
+         * 将所有属性从指定点复制到此点。
+         * @param point 从中复制属性的点。
+         * @returns 返回此Point实例。可用于链接方法调用。
+         */
         copy(point: Point): Point;
+        /**
+         * 设置Point实例的x和y属性。
+         * @param x 
+         * @param y 
+         * @returns 返回此Point实例。可用于链接方法调用。
+         */
         setValues(x?: number, y?: number): Point;
+        /**
+         * 返回Point实例的字符串表示形式。
+         * @returns Point实例的字符串表示形式。
+         */
         toString(): string;
+        /**
+         * 将Point对象偏移指定的量。
+         * - `dx`的值被加到`x`的原始值上，以创建新的`x`值
+         * - `dy`的值被加到`y`的原始值上，以创建新的`y`值
+         * @param dx 水平坐标`x`的偏移量。
+         * @param dy 垂直坐标`y`的偏移量。
+         * @returns 返回偏移后的Point实例。可用于链接方法调用。
+         */
+        offset(dx:number, dy:number):Point;
+        /**
+         * 确定两个指定点之间的点。在两个点之间进行插值。
+         * 
+         * 参数`f`确定新插值点相对于参数`pt1`和`pt2`指定的两个端点的位置：
+         * - 参数`f`的值越接近1.0，插值点就越接近第一个点（参数`pt1`）。
+         * - 参数`f`的值越接近0.0，插值点就越接近第二个点（参数`pt2`）。
+         * 
+         * @param pt1 第一个点作为点或通用对象。
+         * @param pt2 第二个点作为点或通用对象。
+         * @param f 两点之间的插值水平。指示新点将位于`pt1`和`pt2`之间的线上。如果`f=1`，则返回`pt1`；如果`f=0`，则返回`pt2`。
+         * @param pt 将结果复制到其中的对象。如果省略，将返回一个新的点。
+         * @returns 一个新的插值点，或者传入的第4个参数`pt`并带有插值后的值。
+         */
+        static interpolate(pt1:Point, pt2:Point, f:number, pt?:Point|Object):Point;
+        /**
+         * 将一对极坐标转换为笛卡尔点坐标。
+         * @param len 极对的长度坐标。
+         * @param angle 极对的角度，以弧度为单位。
+         * @param pt 将结果复制到其中的对象。如果省略，将返回一个新点。
+         * @returns 一个新的笛卡尔点，或者传入的第3个参数`pt`并带有转换后的值。
+         */
+        static polar(len:number, angle:number, pt?:Point|Object):Point;
     }
 
     class Rectangle {
