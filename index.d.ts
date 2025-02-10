@@ -3345,34 +3345,97 @@ declare namespace createjs {
         clone(): Shadow;
         toString(): string;
     }
-
-
+    /**
+     * Shape 允许您在显示列表中显示矢量图形。它封装了一个{@link Graphics}实例，该实例提供了所有的矢量绘图方法。
+     * Graphics实例可以在多个Shape实例之间共享，以显示相同的矢量图形，但具有不同的位置或变换。
+     * 
+     * 如果在多次绘制之间矢量图形不会发生变化，您可以使用缓存方法({@link cache})来降低渲染成本。
+     * 
+     * ### 示例
+     * ```js
+     * var graphics = new createjs.Graphics().beginFill("#ff0000").drawRect(0, 0, 100, 100);
+     * var shape = new createjs.Shape(graphics);
+     * 
+     * //或者您也可以使用Shape类的graphics属性来渲染相同的图形。
+     * var shape = new createjs.Shape();
+     * shape.graphics.beginFill("#ff0000").drawRect(0, 0, 100, 100);
+     * ```
+     */
     class Shape extends DisplayObject {
+        /**
+         * 
+         * @param graphics 可选参数。用于显示的 Graphics 实例。如果为 null，则会创建一个新的 Graphics 实例。
+         */
         constructor(graphics?: Graphics);
 
+
         // properties
+        /**
+         * 用于显示的 Graphics 实例。
+         */
         graphics: Graphics;
-
-        // methods
-        clone(recursive?: boolean): Shape;
-        set(props: Object): Shape;
-        setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, regX?: number, regY?: number): Shape;
     }
-
-
+    /**
+     * 显示 SpriteSheet 实例中的一帧或一系列帧（例如动画）。精灵表（SpriteSheet）是将多个图像（通常是动画帧）组合成单个图像的集合。
+     * 例如，一个由 8 张 100x100 图像组成的动画可以组合成一个 400x200 的精灵表（4 帧宽 x 2 帧高）。
+     * 您可以显示单个帧、将帧作为动画播放，甚至可以将多个动画序列组合在一起。
+     * 
+     * 有关设置帧和动画的更多信息，请参阅 {@link SpriteSheet} 类。
+     * 
+     * ### 示例
+     * ```js
+     * var instance = new createjs.Sprite(spriteSheet);
+     * instance.gotoAndStop("frameName");
+     * ```
+     * 在调用 {@link gotoAndPlay} 或 {@link gotoAndStop} 之前，只会显示精灵表中定义的第一帧。
+     */
     class Sprite extends DisplayObject {
+        /**
+         * 
+         * @param spriteSheet 用于播放的 SpriteSheet 实例。它包含源图像、帧尺寸和帧数据。有关更多信息，请参阅{@link SpriteSheet}类。
+         * @param frameOrAnimation 初始播放的帧编号或动画。
+         */
         constructor(spriteSheet: SpriteSheet, frameOrAnimation?: string | number);
 
+
         // properties
+        /**
+         * 返回当前正在播放的动画的名称。
+         */
         currentAnimation: string;
+        /**
+         * 指定当前播放动画中的帧索引。在正常播放时，该值会从 0 增加到 n-1，其中 n 是当前动画的总帧数。
+         * 
+         * 如果使用基于时间的播放（见 Sprite/framerate），或者动画的速度不是整数，则该值可能为非整数。
+         * @default 0
+         */
         currentAnimationFrame: number;
+        /**
+         * 调用 draw 方法时将绘制的帧索引。请注意，对于某些{@link SpriteSheet}定义，该值可能不会按顺序递增。该值始终为整数。
+         * @default 0
+         */
         currentFrame: number;
+        /**
+         * 默认情况下，Sprite 实例每 tick 前进一帧。为 Sprite（或其相关的 SpriteSheet）指定帧率（framerate）后，它将根据 tick 之间的时间间隔来调整帧的推进，以维持目标帧率。
+         * 
+         * 例如，如果一个帧率为 10 的 Sprite 被放置在一个以 40fps 更新的 Stage 上，那么该 Sprite 大约每 4 个 tick 前进一帧。这并不是精确的，因为每个 tick 之间的时间间隔会略有不同。
+         * 
+         * 此功能依赖于将 tick 事件对象（或具有适当 "delta" 属性的对象）传递给 update 方法。
+         * @default 0
+         */
         framerate: number;
         /**
          * @deprecated
          */
         offset: number;
+        /**
+         * 阻止动画每 tick 自动推进。例如，您可以创建一个包含图标的精灵表，将 paused 设置为 true，然后通过设置`currentFrame`来显示相应的图标。
+         * @default false
+         */
         paused: boolean;
+        /**
+         * 
+         */
         spriteSheet: SpriteSheet;
 
         // methods
