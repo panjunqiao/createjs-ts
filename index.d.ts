@@ -4068,26 +4068,111 @@ declare namespace createjs {
         //methods
         static install(): Object;
     }
-
-    /*
-        NOTE: It is commented out because it conflicts with SamplePlugin Class of PreloadJS.
-              this class is mainly for documentation purposes.
-        http://www.createjs.com/Docs/TweenJS/classes/SamplePlugin.html
-    */
-    /*
+    /**
+     * PreloadJS 插件提供了一种将功能注入 PreloadJS 的方式，以加载 PreloadJS 不支持的文件类型，或者以 PreloadJS 不支持的方式进行加载。
+     * 
+     * #### 请注意，这个类主要用于文档说明，并不是一个真正的插件。
+     * 
+     * 插件是基于文件扩展名或支持的预加载类型进行注册的，这些类型在 LoadQueue 类中定义为常量。可用的加载类型包括：
+     * - {@link LoadQueue.BINARY | binary} (LoadQueue/BINARY:property)
+     * - {@link LoadQueue.CSS | css} (LoadQueue/CSS:property)
+     * - {@link LoadQueue.IMAGE | image} (LoadQueue/IMAGE:property)
+     * - {@link LoadQueue.JAVASCRIPT | javascript} (LoadQueue/JAVASCRIPT:property)
+     * - {@link LoadQueue.JSON | json} (LoadQueue/JSON:property)
+     * - {@link LoadQueue.JSONP | jsonp} (LoadQueue/JSONP:property)
+     * - {@link LoadQueue.MANIFEST | manifest} (LoadQueue/MANIFEST:property)
+     * - {@link LoadQueue.POST | post} (LoadQueue/POST:property)
+     * - {@link LoadQueue.SOUND | sound} (LoadQueue/SOUND:property)
+     * - {@link LoadQueue.SPRITESHEET | spritesheet} (LoadQueue/SPRITESHEET:property)
+     * - {@link LoadQueue.SVG | svg} (LoadQueue/SVG:property)
+     * - {@link LoadQueue.TEXT | text} (LoadQueue/TEXT:property)
+     * - {@link LoadQueue.XML | xml} (LoadQueue/XML:property)
+     * 
+     * 插件通过{@link getPreloadHandlers}方法定义它处理的类型或扩展名，该方法在插件首次注册时被调用。
+     * 
+     * 要将插件注册到 PreloadJS 中，只需在文件开始加载之前使用{@link LoadQueue.installPlugin | installPlugin}方法将其安装到 LoadQueue 中：
+     * ```js
+     * var queue = new createjs.LoadQueue();
+     * queue.installPlugin(createjs.SamplePlugin);
+     * queue.loadFile("test.jpg");
+     * ```
+     * {@link getPreloadHandlers}方法还可以返回一个`callback`属性，这是一个函数，它会在每个文件加载之前被调用。
+     * 有关 callback 如何工作的更多信息，请查看{@link preloadHandler}。例如，SoundJS 插件允许 PreloadJS 管理使用 Flash Player 的下载。
+     */
     class SamplePlugin {
         constructor();
-
-        // properties
-        static priority: any;
-
         //methods
-        static init(tween: Tween, prop: string, value: any): any;
-        static step(tween: Tween, prop: string, startValue: any, injectProps: Object, endValue: any): void;
-        static install(): void;
-        static tween(tween: Tween, prop: string, value: any, startValues: Object, endValues: Object, ratio: number, wait: boolean, end: boolean): any;
+        /**
+         * 这是一个示例方法，用于展示`completeHandler`，它可以在{@link preloadHandler}的返回对象中可选地指定。
+         * 这个示例为{@link LoadItem}提供了一个`completeHandler`。
+         * 此方法在项目完全加载后、但在{@link LoadQueue}分发{@link LoadQueue.fileload | fileload}事件之前被调用。
+         * 
+         * 提供的示例还监听返回的加载器上的 complete 事件，以显示不同的用法。
+         * @param event 文件加载事件。
+         */
+        fileLoadHandler(event:Event):void;
+        /**
+         * 当插件被安装时,将调用此方法以让 PreloadJS 知道何时调用该插件。
+         * 
+         * PreloadJS 期望此方法返回一个包含以下内容的对象:
+         * 
+         * - callback: 在加载项目之前在插件类上调用的函数。查看 preloadHandler 方法获取更多信息。回调函数会自动在插件的作用域内调用。
+         * - types: 一个数组,包含要处理的 PreloadJS 加载类型。支持的加载类型有 "binary"、"image"、"javascript"、"json"、"jsonp"、"sound"、"svg"、"text" 和 "xml"。
+         * - extensions: 一个字符串数组,包含要处理的文件扩展名,如 "jpg"、"mp3" 等。仅当插件找不到适用的类型处理程序时才会触发。
+         * 
+         * 注意,目前 PreloadJS 仅支持每个扩展名或文件类型一个处理程序。
+         * 
+         * #### 示例
+         * ```js
+         * // 查看 SamplePlugin 源码获取更完整的示例
+         * SamplePlugin.getPreloadHandlers = function() {
+         *     return {
+         *         callback: SamplePlugin.preloadHandler,
+         *         extensions: ["jpg", "jpeg", "png", "gif"]
+         *     }
+         * }
+         * ```
+         * 
+         * 如果插件同时提供了 "type" 和 "extension" 处理程序,type 处理程序将优先,并且每个文件只会触发一次。
+         * 例如,如果你有一个 type=sound 的处理程序和一个 extension=mp3 的处理程序,当匹配到类型时将触发回调。
+         * 
+         * @returns 
+         */
+        getPreloadHandlers():Object;
+        /**
+         * 这是一个示例方法，用于展示如何处理在 LoadQueue/getPreloadHandlers 中指定的回调。
+         * 在文件加载之前，如果找到与该文件类型或扩展名对应的插件，则会调用该插件的回调函数。
+         * 这为插件提供了一个机会来修改加载项，甚至取消加载。回调函数的返回值决定了 PreloadJS 将如何处理该文件：
+         * - false：跳过该文件。这允许插件决定是否应加载某个文件。
+         * 例如，插件可以判断当前系统是否支持某种文件类型，并跳过那些不支持的文件。
+         * - true：正常继续。插件不会影响加载过程。
+         * - AbstractLoader instance：用作内容的加载器。这是 0.6.0 版本中的新功能。
+         * 
+         * 由于{@link LoadItem}是通过引用传递的，插件可以根据需要对其进行修改，甚至可以附加额外的数据。
+         * 请注意，如果修改了{@link LoadItem.src | src}，PreloadJS 会自动更新 LoadItem/ext 属性。
+         * ### 示例
+         * ```js
+         * // 取消加载
+         * SamplePlugin.preloadHandler = function(loadItem, queue) {
+         *     if (loadItem.id.indexOf("thumb") { return false; } // 不加载类似 "image-thumb.png" 的文件
+         *     return true;
+         * }
+         *
+         * // 指定 completeHandler
+         * SamplePlugin.preloadHandler = function(loadItem, queue) {
+         *     item.completeHandler = SamplePlugin.fileLoadHandler;
+         * }
+         *
+         * // 查看 SamplePlugin 源码，查看另一个示例。
+         * ```
+         * 注意：在 0.4.2 及更早版本中，不是{@link LoadItem}，而是传递参数，并返回一个修改后的对象到 PreloadJS。
+         * 现在改为传递 LoadItem 的引用，可以直接修改。
+         * @param loadItem PreloadJS 将要加载的文件项。这个文件项是通过引用传递的，所以可以直接修改。
+         * @param queue 正在预加载该文件的{@link LoadQueue}实例。
+         * @returns 如何处理加载。更多信息请查看主描述。
+         */
+        preloadHandler(loadItem:LoadItem|Object, queue:LoadQueue):Boolean|AbstractLoader;
     }
-    */
 
     class Timeline extends EventDispatcher {
         constructor (tweens: Tween[], labels: Object, props: Object);
@@ -4185,21 +4270,7 @@ declare namespace createjs {
         destroy(): void;
         getItem(value?: string): Object;
         getLoadedItems(): Object[];
-        /**
-         * 通过id获取资源。
-         * 注意：如果加载项中没有提供“id”，则将“src”当作id使用（且不含basePath）。
-         * @param value 资源id
-         * @param rawResult true返回原始数据，false格式化数据，适用于通过XHR加载的内容，如脚本、XML、CSS和图像。如果没有原始数据，则将返回格式化数据。
-         * @returns 返回已经加载的资源。该资源包含如下类型：
-         * 1. 对于图像，返回HTMLImageElement。
-         * 2. JavaScript的脚本（＜script/＞）。请注意，脚本会自动添加到HTMLDOM中。
-         * 3. CSS的样式（＜style/＞或＜link＞）
-         * 4. text的原始文本
-         * 5. 对于JSON，返回Object。
-         * 6. 对于XML，返回XMLDocument。
-         * 7. XHR加载的二进制数组缓冲区。
-         * 8. 对于声音，返回HTMLAudioElement。注意，建议使用SoundJS API来播放加载的音频。具体来说，Flash和WebAudio加载的音频将使用此方法返回一个加载器对象，该对象不能用于播放音频。
-         */
+        
         getResult(value?: any, rawResult?: boolean): Object;
         getTag(): Object;
         /**
@@ -4318,6 +4389,36 @@ declare namespace createjs {
         // methods
         close(): void;
         getItems(loaded: boolean): Object[];
+        /**
+         * 通过id获取资源。
+         * 注意：如果加载项中没有提供“id”，则将“src”当作id使用（且不含basePath）。
+         * @param value 资源id
+         * @param rawResult true返回原始数据，false格式化数据，适用于通过XHR加载的内容，如脚本、XML、CSS和图像。如果没有原始数据，则将返回格式化数据。
+         * @returns 返回已经加载的资源。该资源包含如下类型：
+         * - 对于图像，返回HTMLImageElement。
+         * - JavaScript的脚本（＜script/＞）。请注意，脚本会自动添加到HTMLDOM中。
+         * - CSS的样式（＜style/＞或＜link＞）
+         * - text的原始文本
+         * - 对于JSON，返回Object。
+         * - 对于XML，返回XMLDocument。
+         * - XHR加载的二进制数组缓冲区。
+         * - 对于声音，返回HTMLAudioElement。注意，建议使用SoundJS API来播放加载的音频。具体来说，Flash和WebAudio加载的音频将使用此方法返回一个加载器对象，该对象不能用于播放音频。
+         * 
+         * 注意：该对象也会通过fileload事件作为'item'参数返回。如果请求了原始结果但未找到，将返回处理后的结果。
+         */
+        getResult(value:string,rawResult?:boolean):Object;
+        /**
+         * 注册一个插件。插件可以映射到加载类型（sound，image等）或特定的文件扩展名（png、mp3等）。
+         * 目前每种类型/扩展名只能存在一个插件。
+         * 
+         * 当插件安装时，会调用其上的`getPreloadHandlers()`方法。
+         * 有关此方法的更多信息，请查看{@link SamplePlugin}类中的{@link SamplePlugin.getPreloadHandlers | getPreloadHandlers}方法。
+         * 
+         * 在文件加载之前，匹配的插件有机会修改加载过程。
+         * 如果从{@link SamplePlugin.getPreloadHandlers | getPreloadHandlers}方法返回了一个`回调函数`，它将首先被调用，其结果可能会取消或修改加载项。
+         * 回调方法还可以返回一个 completeHandler，该处理程序将在文件加载完成后触发，或者返回一个 tag 对象，该对象将管理实际的下载。有关这些方法的更多信息，请查看 SamplePlugin 上的 preloadHandler 和 fileLoadHandler 方法。
+         * @param plugin 要安装的插件对象。
+         */
         installPlugin(plugin: any): void;
         loadFile(file: Object | string, loadNow?: boolean, basePath?: string): void;
         loadManifest(manifest: Object | string | any[], loadNow?: boolean, basePath?: string): void;
