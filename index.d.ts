@@ -4386,45 +4386,275 @@ declare namespace createjs {
         setPosition(rawPosition:number,ignoreActions?:boolean,jump?:boolean,callback?:()=>void):void;
     }
     /**
-     * Tween类用于创建和控制动画。
+     * 为单个目标对象补间属性。可以通过链式调用方法来创建复杂的动画序列：
      * 
-     * 
+     * #### 示例
+     * ```js
+     * createjs.Tween.get(target)
+     *     .wait(500)
+     *     .to({alpha:0, visible:false}, 1000)
+     *     .call(handleComplete);
+     * ```
+     * 多个补间可以共享一个目标对象，然而如果它们影响相同的属性，可能会出现意外的行为。
+     * 要停止对象上的所有补间，请使用 removeTweens 或传递 override:true 作为 props 参数。
+     * ```js
+     * createjs.Tween.get(target, {override:true}).to({x:100});
+     * ```
+     * 订阅 Tween/change:event 事件以在补间位置更改时通知。
+     * ```js
+     * createjs.Tween.get(target, {override:true}).to({x:100}).addEventListener("change", handleChange);
+     * function handleChange(event) {
+     *     // 补间位置已更改。
+     * }
+     * ```
+     * 查看 get 方法。
      */
     class Tween extends AbstractTween {
-        constructor(target: Object, props?: Object, pluginData?: Object);
+        /**
+         * 
+         * @param target 将要补间其属性的目标对象。
+         * @param props 要应用于此实例的配置属性(ex. `{loop:-1, paused:true}`)。支持的属性列在下面。这些属性设置到对应的实例属性上，除非另有说明。
+         * -[useTicks=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link useTicks} 属性获取更多信息。
+         * 
+         * - [ignoreGlobalPause=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link ignoreGlobalPause} 属性获取更多信息。
+         * 
+         * - [loop=0] [Number](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number) | [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link loop} 属性获取更多信息。
+
+         * - [reversed=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link reversed} 属性获取更多信息。
+         * 
+         * - [bounce=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link bounce} 属性获取更多信息。
+         * 
+         * - [timeScale=1] [Number](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number) optional
+         * 请参阅 {@link timeScale} 属性获取更多信息。
+
+         * - [pluginData] [Object](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object) optional
+         * 请参阅 {@link pluginData} 属性获取更多信息。
+         * 
+         * - [paused=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link paused} 属性获取更多信息。
+         * 
+         * - [position=0] [Number](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number) optional
+         * 此补间的初始位置。请参阅 {@link position} 属性。
+         * 
+         * - [onChange] [Function](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function) optional
+         * 添加指定函数作为 {@link change} 事件的监听器。
+         * 
+         * - [onComplete] [Function](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function) optional
+         * 添加指定函数作为 {@link complete} 事件的监听器。
+         * 
+         * - [override=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 当设置为 `true` 时，删除目标上的所有现有补间。
+         */
+        constructor(target: Object, props?: Object);
 
         // properties
-        duration: number;
+        /**
+         * 常量返回给插件，告诉补间不要使用默认赋值。
+         */
         static IGNORE: Object;
-        ignoreGlobalPause: boolean;
-        static LOOP: number;
-        loop: boolean;
-        static NONE: number;
-        onChange: Function; // deprecated
-        passive: boolean;
+        /**
+         * 指示补间的当前位置是否在被动等待中。
+         */
+        readonly passive: boolean;
+        /**
+         * 允许您指定将由安装的插件使用的数据。每个插件使用此数据的方式不同，但通常您通过将数据分配给与插件同名的`pluginData`属性来指定数据。
+         * 请注意，在许多情况下，此数据在插件初始化补间时立即使用。因此，在大多数情况下，应在第一次to调用之前设置此数据。
+         * 
+         * #### 示例
+         * ```js
+         * myTween.pluginData.SmartRotation = data;
+         * ```
+         * 大多数插件也支持一个属性来禁用它们用于特定补间。这通常是插件名称后面跟着"_disabled"。
+         * 
+         * ```js
+         * myTween.pluginData.SmartRotation_disabled = true;
+         * ```
+         * 
+         * 一些插件也将工作数据存储在这个对象中，通常在以`_PluginClassName`命名的属性中。有关更多详细信息，请参阅各个插件的文档。
+         */
         pluginData: Object;
-        position: number;
-        static REVERSE: number;
-        target: Object;
+        /**
+         * 此补间的目标。这是将在其上更改补间属性的对象。
+         */
+        readonly target: Object;
 
         // methods
-        call(callback: (tweenObject: Tween) => any, params?: any[], scope?: Object): Tween;    // when 'params' isn't given, the callback receives a tweenObject
-        call(callback: (...params: any[]) => any, params?: any[], scope?: Object): Tween; // otherwise, it receives the params only
-        static get(target: Object, props?: Object, pluginData?: Object, override?: boolean): Tween;
-        static hasActiveTweens(target?: Object): boolean;
-        static installPlugin(plugin: Object, properties: any[]): void;
-        pause(tween: Tween): Tween;
-        play(tween: Tween): Tween;
-        static removeAllTweens(): void;
-        static removeTweens(target: Object): void;
-        set(props: Object, target?: Object): Tween;
-        setPaused(value: boolean): Tween;
-        setPosition(value: number, actionsMode: number): boolean;
-        static tick(delta: number, paused: boolean): void;
-        tick(delta: number): void;
-        to(props: Object, duration?: number, ease?: (t: number) => number): Tween;
-        wait(duration: number, passive?: boolean): Tween;
+        /**
+         * 添加一个动作来调用指定的函数。
+         * 
+         * #### 示例
+         * ```js
+         * // 在1秒后调用myFunction()。
+         * createjs.Tween.get().wait(1000).call(myFunction);
+         * ```
+         * @param callback 要调用的函数。
+         * @param params 要传递给函数的参数。
+         * @param scope 要调用函数的上下文。
+         * @returns 返回补间对象（用于链式调用）。
+         */
+        call(callback: any, params?: any[], scope?: Object): Tween;    // when 'params' isn't given, the callback receives a tweenObject
+        //call(callback: (...params: any[]) => any, params?: any[], scope?: Object): Tween; // otherwise, it receives the params only
+        /**
+         * 返回一个新的补间实例。这是功能上等同于使用 `new Tween(...)`，但可能看起来更干净，使用 TweenJS 的链式语法。
 
+         * #### 示例
+         * ```js
+         * var tween = createjs.Tween.get(target).to({x:100}, 500);
+         * // 等价于：
+         * var tween = new createjs.Tween(target).to({x:100}, 500);
+         * ```
+         * @param target 将要补间其属性的目标对象。
+         * @param props 要应用于此实例的配置属性(ex. `{loop:-1, paused:true}`)。支持的属性列在下面。这些属性设置到对应的实例属性上，除非另有说明。
+         * 
+         * - [useTicks=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link useTicks} 属性获取更多信息。
+         * 
+         * - [ignoreGlobalPause=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link ignoreGlobalPause} 属性获取更多信息。
+         * 
+         * - [loop=0] [Number](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number) | [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link loop} 属性获取更多信息。
+         * 
+         * - [reversed=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link reversed} 属性获取更多信息。
+         * 
+         * - [bounce=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link bounce} 属性获取更多信息。
+         * 
+         * - [timeScale=1] [Number](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number) optional
+         * 请参阅 {@link timeScale} 属性获取更多信息。
+         * 
+         * - [pluginData] [Object](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object) optional
+         * 请参阅 {@link pluginData} 属性获取更多信息。
+         * 
+         * - [paused=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 请参阅 {@link paused} 属性获取更多信息。
+         * 
+         * - [position=0] [Number](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number) optional
+         * 请参阅 {@link position} 属性获取更多信息。
+         * 
+         * - [onChange] [Function](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function) optional
+         * 添加指定函数作为 {@link change} 事件的监听器。
+         * 
+         * - [onComplete] [Function](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function) optional
+         * 添加指定函数作为 {@link complete} 事件的监听器。
+         * 
+         * - [override=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 当设置为 `true` 时，删除目标上的所有现有补间。
+         * 
+         * @returns 返回创建的补间实例。
+         */
+        static get(target: Object, props?: Object): Tween;
+        /**
+         * 指示目标对象（如果指定）或一般是否存在任何活动补间。
+         * @param target 要检查的目标对象。如果未指定，则返回值将指示是否存在任何目标的活动补间。
+         * @returns 如果目标对象上存在活动补间，则返回 `true`，否则返回 `false`。
+         */
+        static hasActiveTweens(target?: Object): boolean;
+        /**
+         * 在补间当前位置添加一个标签，可以用于Tween/gotoAndPlay/Tween/gotoAndStop。
+         * 
+         * #### 示例
+         * ```js
+         * var tween = createjs.Tween.get(foo)
+         *     .to({x:100}, 1000)
+         *     .label("myLabel")
+         *     .to({x:200}, 1000);
+         * ```
+         * // ... tween.gotoAndPlay("myLabel"); // would play from 1000ms in.
+         * @param name 标签的名称。
+         * @returns 返回补间实例（用于链式调用）。
+         */
+        label(name:string):Tween;
+        /**
+         * 添加一个动作来暂停指定的补间。
+         * 
+         * #### 示例
+         * ```js
+         * myTween.pause(otherTween).to({alpha:1}, 1000).play(otherTween);
+         * ```
+         * 注意：此动作在补间更新结束时执行，因此补间可能会超出插入暂停动作的时间。例如：
+         * ```js
+         * myTween.to({foo:0}, 1000).pause().to({foo:1}, 1000);
+         * ```
+         * 在60fps下，补间将每帧前进~16ms，如果上面的补间在当前帧之前处于999ms，它将前进到1015ms（第二步的15ms）并然后暂停。
+         * 
+         * @param tween 要暂停的补间。默认为当前补间。
+         * @returns 返回补间实例（用于链式调用）
+         */
+        pause(tween: Tween): Tween;
+        /**
+         * 添加一个动作来播放（恢复）指定的补间。这使您可以顺序多个补间。
+
+         * #### 示例
+         * ```js
+         * myTween.to({x:100}, 500).play(otherTween);
+         * ```
+         * @param tween 要播放的补间。
+         * @returns 返回补间实例（用于链式调用）。
+         */
+        play(tween: Tween): Tween;
+        /**
+         * 从0.4.1版本开始可用
+         * 
+         * 停止并移除所有现有的补间。
+         */
+        static removeAllTweens(): void;
+        /**
+         * 移除目标对象的所有现有补间。如果`override`属性为`true`，新的补间会自动调用此方法。
+         * @param target 要移除补间的目标对象。
+         */
+        static removeTweens(target: Object): void;
+        /**
+         * 添加一个动作来设置指定目标的指定属性。如果目标为null，将使用当前补间的目标。
+         * 注意，对于目标对象的属性，您应该考虑使用零持续时间的操作，以便值被注册为补间属性。
+         * 
+         * #### 示例
+         * ```js
+         * myTween.wait(1000).set({visible:false}, foo);
+         * ```
+         * @param props 要设置的属性（ex. `{visible:false}`）。
+         * @param target 要设置属性的目标对象。如果省略，将使用当前补间的目标。
+         * @returns 返回补间实例（用于链式调用）。
+         */
+        set(props: Object, target?: Object): Tween;
+        /**
+         * 更新所有补间。这通常使用{@link Ticker}类，但您可以手动调用它，如果您更喜欢使用自己的“心跳”实现。
+         * @param delta 自上次tick以来的时间变化（以毫秒为单位）。除非所有补间都设置为`useTicks`为true，否则需要。
+         * @param paused 如果为true，则暂停所有补间。Tween/ignoreGlobalPause:property将忽略此项，但所有其他补间将暂停如果为`true`。
+         */
+        static tick(delta: number, paused: boolean): void;
+        /**
+         * 从当前值补间到指定属性。设置持续时间为0以跳转到这些值。数值属性将从补间中的当前值补间到目标值。非数值属性将在指定持续时间结束时设置。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.Tween.get(target).to({alpha:0, visible:false}, 1000);
+         * ```
+         * @param props 指定补间属性的目标值（ex. `{x:300}`将补间目标的x属性到300）。
+         * @param duration 补间持续时间（以毫秒为单位）（或以`useTicks`为true的ticks）。
+         * @param ease 用于此补间的缓动函数。请参阅Ease类以获取内置缓动函数的列表。
+         * @returns 返回补间实例（用于链式调用）。
+         */
+        to(props: Object, duration?: number, ease?: (t: number) => number): Tween;
+        /**
+         * 添加一个等待（本质上是一个空补间）。
+
+         * #### 示例
+         * ```js
+         * //此补间将等待1秒后将alpha值渐变为0。
+         * createjs.Tween.get(target).wait(1000).to({alpha:0}, 1000);
+         * ```
+         * @param duration 等待的持续时间（以毫秒为单位）。
+         * @param passive 如果为true，则等待期间不会更新补间。
+         * @returns 返回补间实例（用于链式调用）。
+         */
+        wait(duration: number, passive?: boolean): Tween;
     }
 
     class TweenJS {
