@@ -152,14 +152,14 @@ declare namespace createjs {
      * 
      * Example
      * 
-     * 将EventDispatcher功能添加到“MyClass”类中。
+     * 将EventDispatcher功能添加到"MyClass"类中。
      * ```js
      * EventDispatcher.initialize(MyClass.prototype);
      * ```
      * 添加事件（请参阅{@link addEventListener}）。
      * ```js
-     * instance.addEventListener("eventName", handlerMethod);
-     * function handlerMethod(event) {
+     * instance.addEventListener("eventName", handleClick);
+     * function handleClick(event) {
      *     console.log(event.target + " Was Clicked");
      * }
      * ```
@@ -205,7 +205,7 @@ declare namespace createjs {
         //addEventListener(type: string, listener: (e?:any) => void, useCapture?: boolean): ()=>{}
         /**
          * 将指定的事件分派给所有侦听器。
-         * @param eventObj 具有“type”属性或字符串类型的对象。虽然通用对象可以工作，但建议使用CreateJS事件实例。如果使用了字符串，dispatchEvent将在必要时使用指定的类型构造一个Event实例。后一种方法可以用于避免可能没有任何侦听器的非冒泡事件的事件对象实例化。
+         * @param eventObj 具有"type"属性或字符串类型的对象。虽然通用对象可以工作，但建议使用CreateJS事件实例。如果使用了字符串，dispatchEvent将在必要时使用指定的类型构造一个Event实例。后一种方法可以用于避免可能没有任何侦听器的非冒泡事件的事件对象实例化。
          * @param bubbles 指定将字符串传递给eventObj时的气泡值。
          * @param cancelable 指定将字符串传递给eventObj时可取消的值。
          * @returns 如果对可取消事件调用了preventDefault()，则返回false，否则返回true。
@@ -430,7 +430,7 @@ declare namespace createjs {
         clone(): Bitmap;
     }
     /**
-     * BitmapCache类集成了“缓存”对象所需的所有缓存属性和逻辑，它将{@link DisplayObject}对象渲染为位图。
+     * BitmapCache类集成了"缓存"对象所需的所有缓存属性和逻辑，它将{@link DisplayObject}对象渲染为位图。
      * 此信息和功能曾经位于DisplayObject中的缓存方法上，但被移动到了BitmapCache类中。
      * 
      * 在这种情况下，缓存纯粹是视觉上的，它会将DisplayObject渲染成一个图像来使用，而不是对象。
@@ -475,8 +475,8 @@ declare namespace createjs {
          * 这意味着您可以使用StageGL和2D的任何组合，其中一个、两个或两个阶段和缓存都是WebGL。在StageGL显示列表中使用"new"是非常不受欢迎的，但仍然是一种选择。
          * 由于负面性能原因和上述类别复杂性中提到的图像加载限制，应避免使用。
          * 
-         * 当“options.useGL”设置为目标和WebGL的父阶段时，通过使用"RenderTextures"而不是画布元素来提高性能。这些是存储在GPU中的图形卡上的内部纹理。
-         * 因为它们不再是画布，所以无法执行常规画布所能执行的操作。这样做的好处是避免了将纹理从GPU来回复制到Canvas元素的速度减慢。这意味着“阶段”是可用的推荐选项。
+         * 当"options.useGL"设置为目标和WebGL的父阶段时，通过使用"RenderTextures"而不是画布元素来提高性能。这些是存储在GPU中的图形卡上的内部纹理。
+         * 因为它们不再是画布，所以无法执行常规画布所能执行的操作。这样做的好处是避免了将纹理从GPU来回复制到Canvas元素的速度减慢。这意味着"阶段"是可用的推荐选项。
          * 
          * StageGL缓存不会推断绘制StageGL当前无法绘制的对象的能力，即在缓存形状、文本等时不要使用WebGL上下文缓存。
          * 
@@ -501,7 +501,7 @@ declare namespace createjs {
          * shape.cache(0, 0, 20, 20, 1);
          * ```
          * 您可能希望创建自己的StageGL实例来控制诸如透明颜色、透明度、AA等因素。
-         * 如果您这样做，则传入一个新实例而不是“true”，库将自动在您的实例上将StageGL/isCacheControlled设置为true。
+         * 如果您这样做，则传入一个新实例而不是"true"，库将自动在您的实例上将StageGL/isCacheControlled设置为true。
          * 这将触发它正确运行，而不是假设您的主上下文是WebGL。
          * @param target 
          * @param x 
@@ -611,14 +611,14 @@ declare namespace createjs {
          */
         letterSpacing: number;
         /**
-         * 每行文字的高度。如果为0，则它将使用通过检查“1”、“T”或“L”字符的高度（按此顺序）计算的行高度。
+         * 每行文字的高度。如果为0，则它将使用通过检查"1"、"T"或"L"字符的高度（按此顺序）计算的行高度。
          * 如果这些字符没有定义，它将使用子画面第一帧的高度。
          * @defaultValue 0
          */
         lineHeight: number;
         /**
          * 如果子画面中未定义空格字符，则将插入等于spaceWidth的空像素。
-         * 如果为0，则它将使用通过检查“1”、“l”、“E”或“a”字符的宽度（按此顺序）计算的值。
+         * 如果为0，则它将使用通过检查"1"、"l"、"E"或"a"字符的宽度（按此顺序）计算的值。
          * 如果这些字符没有定义，它将使用子画面第一帧的宽度。
          * @defaultValue 0
          */
@@ -630,7 +630,7 @@ declare namespace createjs {
          * ```js
          * "A": {frames: [0]}
          * ```
-         * 将指示应为“A”字符绘制子画面索引0处的帧。简短的形式也是可以接受的：
+         * 将指示应为"A"字符绘制子画面索引0处的帧。简短的形式也是可以接受的：
          * ```js
          * "A": 0
          * ```
@@ -714,18 +714,18 @@ declare namespace createjs {
          * @param overLabel 当鼠标指针悬浮在按钮时要跳转到的标签或动画。
          * @param downLabel 当鼠标指针在按钮上按下时要跳转到的标签或动画。
          * @param play 当按钮状态改变时，是调用"gotoAndPlay"还是"gotoAndStop"？
-         * @param hitArea 一个可选项目，用作按钮的点击区域。如果未对此进行定义，则将使用按钮的可见区域。请注意，hitState可以使用与“target”参数相同的实例。
+         * @param hitArea 一个可选项目，用作按钮的点击区域。如果未对此进行定义，则将使用按钮的可见区域。请注意，hitState可以使用与"target"参数相同的实例。
          * @param hitLabel hitArea实例上定义hitArea边界的标签或动画。如果这是null，那么将使用hitArea的默认状态。*
          */
         constructor(target: Sprite|MovieClip, outLabel?: string, overLabel?: string, downLabel?: string, play?: boolean, hitArea?: DisplayObject, hitLabel?: string);
         //constructor(target: MovieClip, outLabel?: string, overLabel?: string, downLabel?: string, play?: boolean, hitArea?: DisplayObject, hitLabel?: string);
 
         // properties
-        /** 当用户按下目标时显示的标签名称或帧号。默认为“down”。 */
+        /** 当用户按下目标时显示的标签名称或帧号。默认为"down"。 */
         downLabel: string | number;
-        /** 当用户将鼠标悬停在目标上时显示的标签名称或帧号。默认为“out”。 */
+        /** 当用户将鼠标悬停在目标上时显示的标签名称或帧号。默认为"out"。 */
         outLabel: string | number;
-        /** 当用户将鼠标移出目标时显示的标签名称或帧号。默认为“over”。 */
+        /** 当用户将鼠标移出目标时显示的标签名称或帧号。默认为"over"。 */
         overLabel: string | number;
         /** 如果为true，则ButtonHelper将调用gotoAndPlay，如果为false，则将使用gotoAndStop。默认值为false。 */
         play: boolean;
@@ -844,7 +844,7 @@ declare namespace createjs {
          */
         adjustHue(value: number): ColorMatrix;
         /**
-         * 调整像素的颜色饱和度。正值将增加饱和度，负值将降低饱和度（趋向灰度）。
+         * 调整像素颜色的饱和度。正值将增加饱和度，负值将降低饱和度（趋向灰度）。
          * @param value 介于-100和100之间的值。
          * @returns 返回该方法的ColorMatrix实例（适用于链式调用）
          */
@@ -921,7 +921,7 @@ declare namespace createjs {
     }
     /**
      * Container是一个可嵌套的显示列表，允许您使用复合显示元素。
-     * 例如，可以将手臂、腿、躯干和头部位图实例组合到一个“人物容器”中，并将它们变换为一个组，同时仍然可以相对移动各个部分。
+     * 例如，可以将手臂、腿、躯干和头部位图实例组合到一个"人物容器"中，并将它们变换为一个组，同时仍然可以相对移动各个部分。
      * 容器的子级具有与其父级Container连接的transform和alpha属性。
      * 例如，放置在x=50且阿尔法=0.7的Container中的x=100且阿尔法=0.5的Shape将在x=150且阿尔法=0.35处渲染到画布上。
      * 容器有一些开销，所以通常不应该创建一个容器来容纳一个子容器。
@@ -944,7 +944,7 @@ declare namespace createjs {
         /** 返回容器中的子级数。 */
         numChildren: number;
         /** 如果为false，则tick将不会传播到此容器的子级。
-         * 这可以提供一些性能优势。除了阻止“tick”事件被调度外，它还将阻止某些显示对象上与tick相关的更新（例如Sprite&MovieClip帧前进、DOMElement可见性处理）。
+         * 这可以提供一些性能优势。除了阻止"tick"事件被调度外，它还将阻止某些显示对象上与tick相关的更新（例如Sprite&MovieClip帧前进、DOMElement可见性处理）。
          * @default true
          */
         tickChildren: boolean;
@@ -1091,9 +1091,9 @@ declare namespace createjs {
         cacheCanvas: HTMLCanvasElement | Object;
         /** 返回唯一标识此显示对象的当前缓存的ID号。这可用于确定自上次检查以来缓存是否已更改。 */
         cacheID: number;
-        /** 复合操作指示此显示对象的像素将如何与其后面的元素复合。如果为null，则此属性将从父容器继承。有关更多信息，请阅读关于合成的whatwg规范。有关支持的compositeOperation值的列表，请访问W3C关于Compositing和Blending的草案。 */
+        /** 复合操作指示此显示对象的像素将如何与其后面的元素复合。如果为null，则此属性将从父容器继承。有关更多信息，请阅读关于合成的whatwg规范。有关支持的compositeOperation值的列表，请访问W3C关于Compositing and Blending的草案。 */
         compositeOperation: string;
-        /** 当用户将鼠标悬停在此显示对象上时,将显示相应的鼠标指针样式（例如“指针”、“帮助”、“文本”等），这类似与CSS的cursor */
+        /** 当用户将鼠标悬停在此显示对象上时,将显示相应的鼠标指针样式（例如"指针"、"帮助"、"文本"等），这类似与CSS的cursor */
         cursor: string;
         /** 应用于此显示对象的滤镜对象数组。当显示对象上调用Cache或UpdateCache时滤镜将应用或者更新，并且仅应用于缓存的区域。 */
         filters: Filter[];
@@ -1142,7 +1142,7 @@ declare namespace createjs {
         stage: Stage;
         /** 抑制在跨域内容中使用hitTest、鼠标事件和GetObjectsUnderPoint等功能时生成的错误。 */
         static suppressCrossDomainErrors: boolean;
-        /** 如果为false，则tick时钟将不会作用在此显示对象（或其子对象）上运行。这可以提供一些性能优势。除了阻止“tick”事件被分派外，它还将阻止某些显示对象上与tick相关的更新（例如Sprite和MovieClip帧前进，以及DOMElement显示属性）。 */
+        /** 如果为false，则tick时钟将不会作用在此显示对象（或其子对象）上运行。这可以提供一些性能优势。除了阻止"tick"事件被分派外，它还将阻止某些显示对象上与tick相关的更新（例如Sprite和MovieClip帧前进，以及DOMElement显示属性）。 */
         tickEnabled: boolean;
         /** 如果非null，则定义此显示对象的变换矩阵，覆盖所有其他变换属性(x, y, rotation, scale, skew)。 */
         transformMatrix: Matrix2D;
@@ -1208,7 +1208,7 @@ declare namespace createjs {
          * |Sprite|返回当前帧的边界。如果在spritesheet数据中指定了帧注册点，则x/y可能为非零。另请参见getFrameBounds|
          * |Container|返回从getBounds()返回非空值的所有子级的聚合（组合）边界。|
          * |Shape|当前不支持自动边界计算。使用setBounds()手动定义边界。|
-         * |Text|返回近似边界。水平值（x/宽度）非常准确，但垂直值（y/高度）则不准确，尤其是在使用textBaseline值而不是“top”时。|
+         * |Text|返回近似边界。水平值（x/宽度）非常准确，但垂直值（y/高度）则不准确，尤其是在使用textBaseline值而不是"top"时。|
          * |BitmapText|返回近似边界。如果spritesheet帧注册点接近（x=0，y=0），则值将更准确。|
          * 
          * 对于某些对象（例如文本或具有许多子对象的容器），计算边界可能很消耗性能，每次调用getBounds（）时都会重新计算边界。通过显式设置边界，可以防止对静态对象进行重新计算：
@@ -1551,7 +1551,7 @@ declare namespace createjs {
      * 
      * ### 缩写 API
      * 
-     * Graphics类还包括一个“缩写的API”，这是一个或两个字母的方法，是所有Graphics方法的快捷方式。
+     * Graphics类还包括一个"缩写的API"，这是一个或两个字母的方法，是所有Graphics方法的快捷方式。
      * 这些方法非常适合创建紧凑的指令，CreateJS工具包使用这些方法生成可读代码。所有缩写方法都标记为受保护，因此您可以通过在文档中启用受保护的描述来查看它们。
      * |缩写|方法|缩写|方法|
      * |---|---|---|---|
@@ -1598,14 +1598,14 @@ declare namespace createjs {
          */
         instructions: Object[]; // array of graphics command objects (Graphics.Fill, etc)
         /** 
-         * 将setStrokeStyle的caps参数的数值映射到相应的字符串值。这主要用于小型API。映射如下：0到“对接”，1到“圆形”，2到“方形”。例如，要将线条大写设置为“方形”：
+         * 将setStrokeStyle的caps参数的数值映射到相应的字符串值。这主要用于小型API。映射如下：0到"对接"，1到"圆形"，2到"方形"。例如，要将线条大写设置为"方形"：
          * ```js
          * myGraphics.ss(16, 2);
          * ```
          */
         static STROKE_CAPS_MAP: string[];
         /** 
-         * 将setStrokeStyle的关节参数的数值映射到相应的字符串值。这主要用于小型API。映射如下：0到“斜接”，1到“圆形”，2到“斜面”。例如，要将线接头设置为“斜面”：
+         * 将setStrokeStyle的关节参数的数值映射到相应的字符串值。这主要用于小型API。映射如下：0到"斜接"，1到"圆形"，2到"斜面"。例如，要将线接头设置为"斜面"：
          * ```js
          * myGraphics.ss(16, 0, 2);
          * ```
@@ -1615,7 +1615,7 @@ declare namespace createjs {
         // methods
         /**
          * 将图形命令对象附加到图形队列。
-         * 该命令对象公开了一个“exec”方法，该方法接受两个参数：要操作的Context2D和传递到draw中的任意数据对象。
+         * 该命令对象公开了一个"exec"方法，该方法接受两个参数：要操作的Context2D和传递到draw中的任意数据对象。
          * 后者通常是调用draw的Shape实例。
          * 
          * 此方法由图形方法（如drawCircle）在内部使用，但也可以直接用于插入内置或自定义图形命令。例如：
@@ -1674,7 +1674,7 @@ declare namespace createjs {
          * 
          * 简短写法"bf"。
          * @param image 用于填充的图像源（Image, Canvas, 或 Video），图像源必须要加载完成才能用于填充，否则填充为空。
-         * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。请注意，Firefox不支持“repeat-x”或“repeat-y”（最新测试在FF 20.0中），默认为“repeat”。
+         * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。请注意，Firefox不支持"repeat-x"或"repeat-y"（最新测试在FF 20.0中），默认为"repeat"。
          * @param matrix 
          * @returns 返回Graphics实例（用于链式调用）
          */
@@ -1813,11 +1813,11 @@ declare namespace createjs {
         /**
          * 将压缩的编码路径字符串解码为一系列绘图指令。这种格式不是人类可读的，而是供创作工具使用的。该格式使用base64字符集，每个字符代表6位，来定义一系列绘图命令。
          * 
-         * 每个命令由一个“标题”字符组成，后面是可变数量的交替x和y位置值。
+         * 每个命令由一个"标题"字符组成，后面是可变数量的交替x和y位置值。
          * 从左到右读取标头位（最高有效位到最低有效位）：位1到3指定操作类型（0-moveTo、1-lineTo、2-quadraticCurveTo、3-bezierCurveTo、4-closePath、5-7未使用）。
          * 位4表示位置值是使用12位（2个字符）还是18位（3个字符），其中一位表示后者。位5和6当前未使用。
          * 
-         * 标题后面是一系列0（closePath）、2（moveTo、lineTo）、4（quadraticCurveTo）或6（bezierCurveTo”）参数。
+         * 标题后面是一系列0（closePath）、2（moveTo、lineTo）、4（quadraticCurveTo）或6（bezierCurveTo"）参数。
          * 这些参数是由2或3个字符表示的交替x/y位置（如命令char中的第4位所示）。这些字符由1位符号（1为负，0为正）和11（2个字符）或17（3个字符）位整数值组成。
          * 所有位置值都以十分之一像素为单位。除非移动操作是绝对的，否则该值是前一个x或y位置的增量（视情况而定）。
          * 
@@ -1891,7 +1891,7 @@ declare namespace createjs {
          * @param y 形状中心的位置。
          * @param radius 形状的外半径。
          * @param sides 星形或多边形边上的点数。
-         * @param pointSize 星点的深度或“尖锐度”。pointSize为0将绘制一个正多边形（没有点），pointSize为1将不绘制任何内容，因为点是无限尖的。
+         * @param pointSize 星点的深度或"尖锐度"。pointSize为0将绘制一个正多边形（没有点），pointSize为1将不绘制任何内容，因为点是无限尖的。
          * @param angle 第一个点/角的角度。例如，值为0时，第一个点将直接绘制在中心的右侧。
          * @returns 返回Graphics实例（用于链式调用）
          */
@@ -2055,7 +2055,7 @@ declare namespace createjs {
          * ```
          * 简短写法"sd"。
          * @param segments 指定虚线图案的数组，在直线和间隙之间交替。例如，[20,10]将创建一个20像素线的图案，它们之间有10个像素的间隙。传递null或空数组将清除现有的笔划破折号。
-         * @param offset 虚线图案的偏移。例如，您可以增加此值以创建“行进的蚂蚁”效果。
+         * @param offset 虚线图案的偏移。例如，您可以增加此值以创建"行进的蚂蚁"效果。
          * @returns 返回Graphics实例（用于链式调用）
          */
         setStrokeDash(segments?: number[], offset?: number): Graphics;
@@ -2125,7 +2125,7 @@ declare namespace createjs {
         /**
          * {@link beginBitmapFill}的简短写法。
          * @param image 用于填充的图像源（Image, Canvas, 或 Video），图像源必须要加载完成才能用于填充，否则填充为空。
-         * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。请注意，Firefox不支持“repeat-x”或“repeat-y”（最新测试在FF 20.0中），默认为“repeat”。
+         * @param repetition 可选。指示是否在填充区域中重复图像。"repeat"、"repeat-x"、"repreat-y"或"no-repeat"中的一个。默认为"repeat"。请注意，Firefox不支持"repeat-x"或"repeat-y"（最新测试在FF 20.0中），默认为"repeat"。
          * @param matrix 
          * @returns 返回Graphics实例（用于链式调用）
          */
@@ -2157,31 +2157,7 @@ declare namespace createjs {
         /**
          * {@link beginRadialGradientStroke}的简短写法。
          * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
-         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1，0.9]将第一种颜色绘制为10%，然后插值为90%的第二种颜色。
-         * @param x0 定义定义渐变方向和大小的线的第一个点的位置。
-         * @param y0 定义定义渐变方向和大小的线的第一个点的位置。
-         * @param x1 定义定义渐变方向和大小的线的第二个点的位置。
-         * @param y1 定义定义渐变方向和大小的线的第二个点的位置。
-         * @returns 返回Graphics实例（用于链式调用）
-         */
-        ls(colors: string[], ratios: number[], x0: number, y0: number, x1: number, y1: number): Graphics;
-        /**
-         * {@link beginRadialGradientFill}的简短写法。
-         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
          * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1,0.9]将第一种颜色绘制为10%，然后插值为90%的第二种颜色。
-         * @param x0 定义渐变的内圈的中心位置。
-         * @param y0 定义渐变的内圈的中心位置。
-         * @param r0 定义渐变的内圈半径。
-         * @param x1 定义渐变的外圆的中心位置。
-         * @param y1 定义渐变的外圆的中心位置。
-         * @param r1 定义渐变的外圆半径。
-         * @returns 返回Graphics实例（用于链式调用）
-         */
-        rf(colors: string[], ratios: number[], x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): Graphics;
-        /**
-         * {@link beginRadialGradientStroke}的简短写法。
-         * @param colors 一组与CSS兼容的颜色值。例如，["#F00","#00F"]将定义从红色到蓝色的渐变图。
-         * @param ratios 与颜色相对应的梯度位置数组。例如，[0.1,0.9]将第一种颜色绘制为10%，然后插值到90%的第二种颜色，然后将第二种色彩绘制为100%。
          * @param x0 定义渐变的内圈的中心位置。
          * @param y0 定义渐变的内圈的中心位置。
          * @param r0 定义渐变的内圈半径。
@@ -2247,7 +2223,7 @@ declare namespace createjs {
          * @param y 形状中心的位置。
          * @param radius 形状的外半径。
          * @param sides 星形或多边形边上的点数。
-         * @param pointSize 星点的深度或“尖锐度”。pointSize为0将绘制一个正多边形（没有点），pointSize为1将不绘制任何内容，因为点是无限尖的。
+         * @param pointSize 星点的深度或"尖锐度"。pointSize为0将绘制一个正多边形（没有点），pointSize为1将不绘制任何内容，因为点是无限尖的。
          * @param angle 第一个点/角的角度。例如，值为0时，第一个点将直接绘制在中心的右侧。
          * @returns 返回Graphics实例（用于链式调用）
          */
@@ -2339,7 +2315,7 @@ declare namespace createjs {
         /**
          * {@link setStrokeDash}的简短写法。
          * @param segments 指定虚线图案的数组，在直线和间隙之间交替。例如，[20,10]将创建一个20像素线的图案，它们之间有10个像素的间隙。传递null或空数组将清除现有的笔划破折号。
-         * @param offset 虚线图案的偏移。例如，您可以增加此值以创建“行进的蚂蚁”效果。
+         * @param offset 虚线图案的偏移。例如，您可以增加此值以创建"行进的蚂蚁"效果。
          * @returns 返回Graphics实例（用于链式调用）
          */
         sd(segments?: number[], offset?: number): Graphics;
@@ -3018,7 +2994,7 @@ declare namespace createjs {
          * 如果为true，则每当时间轴将影片剪辑添加回显示列表时，影片剪辑将自动重置为其第一帧。
          * 这仅适用于模式为"INDEPENDENT"的MovieClip实例。
          * 
-         * 例如，如果你有一个角色动画，其中“body”为其子显示对象（MovieClip实例）在每一帧上都有不同的服装，
+         * 例如，如果你有一个角色动画，其中"body"为其子显示对象（MovieClip实例）在每一帧上都有不同的服装，
          * 你可以将body.autoReset设置为false，这样你就可以手动更改它所在的帧，而不用担心它会自动重置。
          * @default true
          */
@@ -3039,7 +3015,7 @@ declare namespace createjs {
          * 例如，如果将帧速率为10的MovieClip放置在以40fps更新的舞台上，则MovieClip将大约每4个滴答前进一帧。
          * 这并不准确，因为每个滴答之间的时间在帧之间会略有不同。
          * 
-         * 此功能取决于传递到{@link update}中的滴答事件对象（或具有适当“delta”属性的对象）。
+         * 此功能取决于传递到{@link update}中的滴答事件对象（或具有适当"delta"属性的对象）。
          */
         framerate: number;
         /**
@@ -3089,7 +3065,7 @@ declare namespace createjs {
          * mc.timeline.addTween(tween);
          * ```
          * 通过使用`tweenInstance.to()`方法切换"_off"属性，可以在时间线中添加和删除元素。请注意，不建议使用`Tween.set`创建MovieClip动画。
-         * 以下示例将在第1帧关闭目标，然后在第2帧重新打开。您可以使用“visible”属性来实现相同的效果。
+         * 以下示例将在第1帧关闭目标，然后在第2帧重新打开。您可以使用"visible"属性来实现相同的效果。
          * ```js
          * var tween = createjs.Tween.get(target).to({_off:false})
          *     .wait(1).to({_off:true})
@@ -3505,7 +3481,7 @@ declare namespace createjs {
      * 帧
      * 定义各个帧。帧数据支持两种格式：当所有帧的大小都相同（在网格中）时，使用具有width、height、regX、regY和count属性的对象。
      * 1.需要宽度和高度，并指定框架的尺寸
-     * 2.regX和regY表示帧的注册点或“原点”
+     * 2.regX和regY表示帧的注册点或"原点"
      * 3.间距表示帧之间的间距
      * 4.margin指定图像周围的边距
      * 5.count允许您指定精灵表中的总帧数；如果省略，则将基于源图像和帧的尺寸来计算。帧将根据其在源图像中的位置（从左到右，从上到下）分配索引。
@@ -3555,7 +3531,7 @@ declare namespace createjs {
      * 		    }
      * 		}
      * 
-     * 注意：速度属性是在EaselJS 0.7.0中添加的。早期版本具有频率属性，这与速度相反。例如，在早期版本中，值“4”是正常速度的1/4，但在EaselJS 0.7.0+中是正常速度的4倍。
+     * 注意：速度属性是在EaselJS 0.7.0中添加的。早期版本具有频率属性，这与速度相反。例如，在早期版本中，值"4"是正常速度的1/4，但在EaselJS 0.7.0+中是正常速度的4倍。
      * 
      * 帧速率
      * 可选。指示播放此精灵表的默认帧速率，单位为每秒帧数。有关更多信息，请参阅帧率。
@@ -3570,7 +3546,7 @@ declare namespace createjs {
      * 		}
      * 
      * 案例
-     * 定义一个简单的精灵表，其中一张图像“sprites.jpg”排列规格为50x50的网格中，有三个动画：“站立”显示第一帧，“运行”循环第1-5帧，“跳跃”播放第6-8帧并按顺序返回运行。
+     * 定义一个简单的精灵表，其中一张图像"sprites.jpg"排列规格为50x50的网格中，有三个动画："站立"显示第一帧，"运行"循环第1-5帧，"跳跃"播放第6-8帧并按顺序返回运行。
      * 
      * 		var data = {
      * 		    images: ["sprites.jpg"],
@@ -3823,15 +3799,15 @@ declare namespace createjs {
         /**
          * 
          * @param text 显示的文本
-         * @param font 要使用的字体样式。CSS字体属性的任何有效值都是可以接受的（例如“bold 36px Arial”）。
-         * @param color 用于绘制文本的颜色。CSS颜色属性的任何有效值都是可接受的（例如“#F00”、“red”或“#FF0000”）。
+         * @param font 要使用的字体样式。CSS字体属性的任何有效值都是可以接受的（例如"bold 36px Arial"）。
+         * @param color 用于绘制文本的颜色。CSS颜色属性的任何有效值都是可接受的（例如"#F00"、"red"或"#FF0000"）。
          */
         constructor(text?: string, font?: string, color?: string);
 
         // properties
-        /** 用于绘制文本的颜色。CSS颜色属性的任何有效值都是可接受的（例如“#F00”）。默认值为“#000”。它还将接受有效的canvas fillStyle值。 */
+        /** 用于绘制文本的颜色。CSS颜色属性的任何有效值都是可接受的（例如"#F00"）。默认值为"#000"。它还将接受有效的canvas fillStyle值。 */
         color: string;
-        /** 要使用的字体样式。CSS字体属性的任何有效值都是可以接受的（例如“bold 36px Arial”）。 */
+        /** 要使用的字体样式。CSS字体属性的任何有效值都是可以接受的（例如"bold 36px Arial"）。 */
         font: string;
         /** 指示多行文本的行高（基线之间的垂直距离）。如果为null或0，则使用getMeasuredLineHeight的值。 */
         lineHeight: number;
@@ -3842,7 +3818,7 @@ declare namespace createjs {
         /** 如果大于0，文本将绘制为指定宽度的笔划（轮廓）。 */
         outline: number;
         text: string;
-        /** 水平文本对齐方式。"start"、"end"、"left"、"right"和"center"中的任意一个。有关详细信息，请查看whatwg规范。默认值为“left”。 */
+        /** 水平文本对齐方式。"start"、"end"、"left"、"right"和"center"中的任意一个。有关详细信息，请查看whatwg规范。默认值为"left"。 */
         textAlign: string;
         textBaseline: string;
 
@@ -4624,7 +4600,7 @@ declare namespace createjs {
          */
         set(props: Object, target?: Object): Tween;
         /**
-         * 更新所有补间。这通常使用{@link Ticker}类，但您可以手动调用它，如果您更喜欢使用自己的“心跳”实现。
+         * 更新所有补间。这通常使用{@link Ticker}类，但您可以手动调用它，如果您更喜欢使用自己的"心跳"实现。
          * @param delta 自上次tick以来的时间变化（以毫秒为单位）。除非所有补间都设置为`useTicks`为true，否则需要。
          * @param paused 如果为true，则暂停所有补间。Tween/ignoreGlobalPause:property将忽略此项，但所有其他补间将暂停如果为`true`。
          */
@@ -4656,34 +4632,75 @@ declare namespace createjs {
          */
         wait(duration: number, passive?: boolean): Tween;
     }
-
+    /**
+     * 静态类，保存库特定信息，如库的版本和buildDate。
+     */
     class TweenJS {
         // properties
+        /**
+         * 库的构建日期，以UTC格式表示。
+         */
         static buildDate: string;
+        /**
+         * 库的版本字符串。
+         */
         static version: string;
     }
+    /**
+     * 所有加载器扩展的基类，包括{@link LoadQueue}。
+     */
     class AbstractLoader extends EventDispatcher {
         // properties
-        static BINARY: string;
+        /**
+         * 确定加载器是否被取消。取消的加载不会触发complete事件。
+         * 注意，此属性是只读的，所以LoadQueue队列应该使用close而不是取消。
+         * @default false
+         */
         canceled: boolean;
-        static CSS: string;
-        static GET: string;
-        static IMAGE: string;
-        static JAVASCRIPT: string;
-        static JSON: string;
-        static JSONP: string;
+        /**
+         * 如果加载器已完成加载。这提供了一个快速检查，但也确保了不同的加载方法不会累积，导致多个`complete`事件。
+         * @default false
+         */
         loaded: boolean;
-        static MANIFEST: string;
-        static POST: string;
+        /**
+         * 当前加载进度（百分比）。这将是一个介于0和1之间的数字。
+         * 
+         * #### 示例
+         * ```js
+         * var queue = new createjs.LoadQueue();
+         * queue.loadFile("largeImage.png");
+         * queue.on("progress", function() {
+         *     console.log("Progress:", queue.progress, event.progress);
+         * });
+         * ```
+         * @default 0
+         */
         progress: number;
+        /**
+         * 一个将加载的原始结果转换为最终结果的格式化函数。例如，JSONLoader将字符串文本转换为JavaScript对象。
+         * 并非所有加载器都有resultFormatter，此属性可以重写以提供自定义格式化。
+         * 
+         * 可选地，resultFormatter可以返回一个回调函数，在这种情况下，格式化需要异步进行，例如创建一个新图像。
+         * 回调函数传递2个参数，分别是resultFormatter的成功和错误条件。注意，resultFormatter方法在当前范围内也被调用，以及成功和错误回调。
+         * 
+         * #### 异步 resultFormatter 示例
+         * ```js
+         * function _formatResult(loader) {
+         *     return function(success, error) {
+         *         if (errorCondition) { error(errorDetailEvent); }
+         *         success(result);
+         *     }
+         * }
+         * ```
+         * 一个自定义的结果格式化函数，在请求分派其complete事件之前被调用。
+         * 大多数加载器类型已经有一个内部格式化程序，但可以被用户重写以进行自定义格式化。格式化后的结果将通过使用GetResult在加载器上可用，并传递`true`。
+         * @default null
+         */
         resultFormatter: () => any;
-        static SOUND: string;
-        static SPRITESHEET: string;
-        static SVG: string;
-        static TEXT: string;
+        /**
+         * 此加载器将加载的项目类型。请参阅 {@link AbstractLoader} 获取支持的类型的完整列表。
+         */
         type: string;
-        static VIDEO: string;
-        static XML: string;
 
         // methods
         cancel(): void;
@@ -4811,7 +4828,7 @@ declare namespace createjs {
         getItems(loaded: boolean): Object[];
         /**
          * 通过id获取资源。
-         * 注意：如果加载项中没有提供“id”，则将“src”当作id使用（且不含basePath）。
+         * 注意：如果加载项中没有提供"id"，则将"src"当作id使用（且不含basePath）。
          * @param value 资源id
          * @param rawResult true返回原始数据，false格式化数据，适用于通过XHR加载的内容，如脚本、XML、CSS和图像。如果没有原始数据，则将返回格式化数据。
          * @returns 返回已经加载的资源。该资源包含如下类型：
@@ -4907,7 +4924,7 @@ declare namespace createjs {
         static getTypeByExtension(extension: string): string;
         static isAudioTag(item: Object): boolean;
         /**
-         * 确定是否应将特定类型加载为二进制文件。目前，只有专门标记为“二进制”的图像和项目才加载为二进制。请注意，音频不是二进制类型，因为如果加载为二进制，则无法使用音频标签进行回放。插件可以将项类型更改为二进制，以确保获得可使用的二进制结果。二进制文件是使用XHR2加载的。类型在AbstractLoader上定义为静态常量。
+         * 确定是否应将特定类型加载为二进制文件。目前，只有专门标记为"二进制"的图像和项目才加载为二进制。请注意，音频不是二进制类型，因为如果加载为二进制，则无法使用音频标签进行回放。插件可以将项类型更改为二进制，以确保获得可使用的二进制结果。二进制文件是使用XHR2加载的。类型在AbstractLoader上定义为静态常量。
          * @param type 加载项类型
          */
         static isBinary(type: string): boolean;
