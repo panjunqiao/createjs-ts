@@ -4703,19 +4703,63 @@ declare namespace createjs {
         type: string;
 
         // methods
+        /**
+         * 关闭项目。这将停止任何打开的请求（尽管使用HTML标签的下载可能仍在后台继续），但不再分发事件。
+         */
         cancel(): void;
+        /**
+         * 清理加载器。
+         */
         destroy(): void;
-        getItem(value?: string): Object;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 获取此加载器加载的清单项的引用。在某些情况下，这将是通过{@link LoadQueue.loadFile | loadFile}或{@link LoadQueue.loadManifest | loadManifest}传递给{@link LoadQueue}的值。
+         * 然而，如果只传递了一个String路径，那么它将是一个{@link LoadItem}。
+         * @returns 返回此加载器负责加载的清单项。
+         */
+        getItem(): Object;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 获取加载器加载的任何内部项目。这使像{@link ManifestLoader}这样的加载器可以暴露它加载的内部项目。
+         * @returns 返回加载器加载的内部项目列表。
+         */
         getLoadedItems(): Object[];
-        
-        getResult(value?: any, rawResult?: boolean): Object;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 获取加载器加载的内容。只有在Complete:event事件分派后才可用。
+         * @param raw 确定返回的结果是否是格式化的内容，还是原始加载的数据（如果存在）。
+         * @returns 返回加载器加载的内容。
+         */
+        getResult(raw?: boolean): Object;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 返回此对象创建或用于加载的标签。
+         * @returns 返回标签实例
+         */
         getTag(): Object;
         /**
-         * 开始加载资源。
+         * 开始加载项目。当单独使用加载器时，此方法是必需的。
+         * 
+         * #### 示例
+         * ```js
+         * var queue = new createjs.LoadQueue();
+         * queue.on("complete", handleComplete);
+         * queue.loadManifest(fileArray, false); // 注意第二个参数告诉队列暂时不要开始加载
+         * queue.load();
+         * ```
          */
         load(): void;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 设置此项目使用的标签。
+         * @param tag 标签实例。
+         */
         setTag(tag: Object): void;
-        toString(): string;
     }
 
     class AbstractMediaLoader
