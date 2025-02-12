@@ -4761,18 +4761,36 @@ declare namespace createjs {
          */
         setTag(tag: Object): void;
     }
-
-    class AbstractMediaLoader
+    /**
+     * 所有媒体加载器扩展的基类，如Video和Audio。
+     */
+    class AbstractMediaLoader extends AbstractLoader
     {
-        constructor(loadItem: Object, preferXHR: boolean, type: string);
+        /**
+         * 
+         * @param loadItem 
+         * @param preferXHR 
+         * @param type The type of media to load. Usually "video" or "audio".
+         */
+        constructor(loadItem: LoadItem|Object, preferXHR: boolean, type: string);
     }
-
+    /**
+     * 一个实际数据请求的基类，如XHRRequest、TagRequest和MediaRequest。PreloadJS加载器通常会在底层使用数据加载器来获取数据。
+     */
     class AbstractRequest
     {
         constructor(item: LoadItem);
-
+        /**
+         * 取消正在进行中的请求。
+         */
         cancel(): void;
+        /**
+         * 清理请求。
+         */
         destroy(): void;
+        /**
+         * 开始加载。
+         */
         load(): void;
     }
 
