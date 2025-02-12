@@ -4173,34 +4173,224 @@ declare namespace createjs {
          */
         preloadHandler(loadItem:LoadItem|Object, queue:LoadQueue):Boolean|AbstractLoader;
     }
-
+    /**
+     * Timeline类同步多个tweens，并允许将它们作为一个组控制。
+     * 请注意，如果时间轴正在循环，即使tween的"loop"属性为false，tweens也可能看起来在循环。
+     * 
+     * NOTE: Timeline目前也接受一个参数列表，形式为：tweens, labels, props。
+     * 这只是为了向后兼容性，将来会被删除。将tweens和labels作为props对象的属性包含在内。
+     */
     class Timeline extends EventDispatcher {
-        constructor (tweens: Tween[], labels: Object, props: Object);
+        /**
+         * 
+         * @param props 要应用于此实例的配置属性(例如 {loop:-1, paused:true})。
+         * 支持的属性列在下面。除非另有说明,这些属性会设置到对应的实例属性上。
+         * - useTicks
+         * - ignoreGlobalPause
+         * - loop
+         * - reversed
+         * - bounce
+         * - timeScale
+         * - paused
+         * - position: 初始位置
+         * - onChange: 添加指定函数作为change事件的监听器
+         * - onComplete: 添加指定函数作为complete事件的监听器
+         */
+        constructor (props?: Object);
 
         // properties
-        duration: number;
-        ignoreGlobalPause: boolean;
-        loop: boolean;
-        position: Object;
+        /**
+         * 时间轴中的tweens数组。*强烈*建议你使用Tween/addTween和Tween/removeTween，而不是直接访问这个属性，但它是为高级使用而包含的。
+         */
+        tweens:Array<Tween>;
 
         // methods
-        addLabel(label: string, position: number): void;
-        addTween(...tween: Tween[]): void;
-        getCurrentLabel(): string;
-        getLabels(): Object[];
-        gotoAndPlay(positionOrLabel: string | number): void;
-        gotoAndStop(positionOrLabel: string | number): void;
-        removeTween(...tween: Tween[]): void;
-        resolve(positionOrLabel: string | number): number;
-        setLabels(o: Object): void;
-        setPaused(value: boolean): void;
-        setPosition(value: number, actionsMode?: number): boolean;
-        tick(delta: number): void;
+        /**
+         * 添加一个或多个tweens（或时间轴）到此时间轴。tweens将被暂停（从正常计时系统中移除）并由该时间轴管理。
+         * 将tween添加到多个时间轴中将导致意外行为。
+         * @param tween 要添加的tween或时间轴。接受多个参数。
+         * @returns 传递的第一个tween。
+         */
+        addTween(...tween: Tween[]): Tween;
+        /**
+         * 从该时间轴中移除一个或多个tweens。
+         * @param tween 要移除的tween或时间轴。接受多个参数。
+         * @returns 如果所有tweens都成功移除，则返回true，否则返回false。
+         */
+        removeTween(...tween: Tween[]): Boolean;
+        /**
+         * 重新计算时间轴的持续时间。
+         * 当tweens被添加或移除时，持续时间会自动更新，但如果你在添加到时间轴后修改tween，则此方法很有用。
+         */
         updateDuration(): void;
     }
-
-
-    class Tween extends EventDispatcher {
+    class AbstractTween extends EventDispatcher {
+        /**
+         * 
+         * @param props 要应用于此实例的配置属性(ex. `{loop:-1, paused:true}`)。
+         * 支持的属性列在下面。这些属性设置到对应的实例属性上，除非另有说明。
+         * 
+         * - [useTicks=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 
+         * 查看 {@link useTicks} 属性获取更多信息。
+         * 
+         * - [ignoreGlobalPause=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 
+         * 查看 {@link ignoreGlobalPause} 属性获取更多信息。
+         * 
+         * - [loop=0] [Number](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number) | [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 
+         * 查看 {@link loop} 属性获取更多信息。
+         * 
+         * - [reversed=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 
+         * 查看 {@link reversed} 属性获取更多信息。
+         * 
+         * - [bounce=false] [Boolean](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean) optional
+         * 
+         * 查看 {@link bounce} 属性获取更多信息。
+         * 
+         * - [timeScale=1] [Number](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number) optional
+         * 
+         * 查看 {@link timeScale} 属性获取更多信息。
+         * 
+         * - [onChange] [Function](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function) optional
+         * 
+         * 添加指定函数作为 {@link change} 事件的监听器。
+         * 
+         * - [onComplete] [Function](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function) optional
+         * 
+         * 添加指定函数作为 {@link complete} 事件的监听器。
+         */
+        constructor(props?: Object);
+        // properties
+        /**
+         * 使tween在每个循环结束时反转方向。每个单向播放的tween计为一个反弹。
+         * 例如，要向前播放一次tween，然后向后播放一次，请将{@link loop}设置为`1`。
+         * @default false
+         */
+        bounce: boolean;
+        /**
+         * 返回当前位置或紧接当前位置的标签名称。
+         * 例如，给定一个tween有两个标签，"first"在帧索引4，"second"在帧8，currentLabel将返回：
+         * 
+         * - null如果当前位置是2。
+         * - "first"如果当前位置是4。
+         * - "first"如果当前位置是7。
+         * - "second"如果当前位置是15。
+         */
+        readonly currentLabel:string;
+        /**
+         * 指示此tween的持续时间（以毫秒为单位，或如果useTicks为true，则为ticks），不考虑循环。
+         * 此值会自动更新，因为您修改tween。直接更改它可能会导致意外行为。
+         * @default 0
+         */
+        readonly duration:number;
+        /**
+         * 当全局暂停时，使此tween继续播放。
+         * 例如，如果TweenJS使用{@link Ticker}，则将此设置为false（默认值）将导致此tween在`Ticker.paused`设置为`true`时暂停。
+         * 请参阅{@link tick}方法获取更多信息。可以通过`props`参数设置。
+         * @default false
+         */
+        ignoreGlobalPause: boolean;
+        /**
+         * 指示tween的循环次数。如果设置为-1，tween将无限循环。
+         * 
+         * 注意，一个tween必须*至少*循环一次，才能在{@link bounce}设置为true时看到它在两个方向上播放。
+         * @default 0
+         */
+        loop: number;
+        /**
+         * 暂停或恢复tween。暂停的tween从全局注册表中移除，并且如果没有其他引用，则可以进行垃圾回收。
+         * @default false
+         */
+        paused:boolean;
+        /**
+         * 当前tween的归一化位置。这个值总是介于0和`duration`之间。直接更改此属性将导致意外行为，请使用{@link Tween.setPosition}。
+         * @readonly
+         * @default 0
+         */
+        readonly position:Object;
+        /**
+         * 原始tween位置。这个值在tween激活时介于0和`loops*duration`之间，或在激活前为-1。
+         * @readonly
+         * @default -1
+         */
+        readonly rawPosition:number;
+        /**
+         * 使tween反向播放。
+         * @default false
+         */
+        reversed: boolean;
+        /**
+         * 更改tween的播放速率。例如，`timeScale`值为2将使tween的播放速度加倍，值为`0.5`将使其减半。
+         * @default 1
+         */
+        timeScale:number;
+        /**
+         * 使用ticks来计时所有持续时间，而不是毫秒。这也改变了某些操作的行为（如call）。在运行中的tween上更改此值可能会导致意外结果。
+         * @readonly
+         * @default false
+         */
+        readonly useTicks: boolean;
+        // methods
+        /**
+         * 添加一个标签，可以用于Timeline/gotoAndPlay/Timeline/gotoAndStop。
+         * @param label 标签的名称。
+         * @param position 标签的位置。
+         */
+        addLabel(label:string, position:number):void;
+        /**
+         * 前进tween指定的时间量。
+         * @param delta 前进的时间量（以毫秒为单位，或如果useTicks为true，则为ticks）。负值也支持。
+         * @param ignoreActions 如果为true，由于此位置变化，不会执行任何操作。
+         */
+        advance(delta:number, ignoreActions?:boolean):void;
+        /**
+         * 根据原始位置计算归一化位置。例如，给定一个持续时间为3000ms的tween，设置loop: console.log(myTween.calculatePosition(3700); // 700
+         * @param rawPosition 原始位置。
+         */
+        calculatePosition(rawPosition:number):void;
+        /**
+         * 返回此tween上定义的标签列表，按位置排序。
+         * @returns 一个包含标签和位置属性的对象数组。
+         */
+        getLabels():Array<Object>;
+        /**
+         * 取消暂停此时间轴并跳转到指定位置或标签。
+         * @param positionOrLabel 位置（以毫秒为单位，或如果`useTicks`为`true`，则为ticks）或标签。
+         */
+        gotoAndPlay(positionOrLabel:string|number):void;
+        /**
+         * 暂停此时间轴并跳转到指定位置。
+         * @param positionOrLabel 位置（以毫秒为单位，或如果`useTicks`为`true`，则为ticks）或标签。
+         */
+        gotoAndStop(positionOrLabel:string|number):void;
+        /**
+         * 如果传递一个数字位置，则返回不变。如果传递一个字符串，则返回相应帧标签的位置，或者如果没有定义匹配的标签，则返回null。
+         * @param positionOrLabel 一个数字位置值或标签字符串。
+         */
+        resolve(positionOrLabel:string|number):void;
+        /**
+         * 定义用于gotoAndPlay/Stop的标签。覆盖任何先前设置的标签。
+         * @param labels 一个定义用于Timeline/gotoAndPlay/Timeline/gotoAndStop的标签的对象，形式为`{myLabelName:time}`，其中time以毫秒为单位（或如果`useTicks`为`true`，则为ticks）。
+         */
+        setLabels(labels:Object):void;
+        /**
+         * 前进到指定位置。
+         * @param rawPosition 要前进到的位置（以毫秒为单位，或如果`useTicks`为`true`，则为ticks）。
+         * @param ignoreActions 如果为true，则不运行任何由该操作触发的事件。
+         * @param jump 如果为true，则只运行新位置的操作。如果为false，则运行旧位置和新位置之间的操作。
+         * @param callback 主要用于MovieClip，在属性更新后但在操作运行之前调用。
+         */
+        setPosition(rawPosition:number,ignoreActions?:boolean,jump?:boolean,callback?:()=>void):void;
+    }
+    /**
+     * Tween类用于创建和控制动画。
+     * 
+     * 
+     */
+    class Tween extends AbstractTween {
         constructor(target: Object, props?: Object, pluginData?: Object);
 
         // properties
