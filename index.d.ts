@@ -5463,69 +5463,177 @@ declare namespace createjs {
      */
     class SpriteSheetLoader extends AbstractLoader
     {
-        constructor(loadItem: Object);
+        constructor(loadItem: LoadItem|Object);
         /**
          * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.SPRITESHEET | SPRITESHEET}的项目。
          * @param item LoadQueue尝试加载的LoadItem
          * @returns 加载器是否可以加载该项目
          */
-        static canLoadItem(item: Object): boolean;
+        static canLoadItem(item: LoadItem|Object): boolean;
     }
-
+    /**
+     * 一个用于SVG文件的加载器。
+     */
     class SVGLoader extends AbstractLoader
     {
-        constructor(loadItem: Object, preferXHR: boolean);
-
-        static canLoadItem(item: Object): boolean;
+        constructor(loadItem: LoadItem|Object, preferXHR: boolean);
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.SVG | SVG}的项目。
+         * @param item LoadQueue尝试加载的LoadItem
+         * @returns 加载器是否可以加载该项目
+         */
+        static canLoadItem(item: LoadItem|Object): boolean;
     }
-
+    /**
+     * 一个用于加载HTML标签的AbstractRequest，如图像和脚本。
+     */
     class TagRequest
     {
 
     }
-
+    /**
+     * 一个用于加载文本文件的加载器。
+     */
     class TextLoader extends AbstractLoader
     {
         constructor(loadItem: Object);
-
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.TEXT | TEXT}的项目。
+         * @param item LoadQueue尝试加载的LoadItem
+         * @returns 加载器是否可以加载该项目
+         */
         static canLoadItem(item: Object): boolean;
     }
-
+    /**
+     * 一个用于视频文件的加载器。
+     */
     class VideoLoader extends AbstractLoader
     {
         constructor(loadItem: Object, preferXHR: boolean);
-
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.VIDEO | VIDEO}的项目。
+         * @param item LoadQueue尝试加载的LoadItem
+         * @returns 加载器是否可以加载该项目
+         */
         static canLoadItem(item: Object): boolean;
     }
-
+    /**
+     * 一个使用XHR请求加载项目的预加载器，通常是XMLHttpRequest。
+     * 然而，如果可能的话，XDomainRequests将用于跨域请求，而较旧版本的IE在必要时会回退到ActiveX对象。
+     * XHR请求将内容加载为文本或二进制数据，提供进度和一致的完成事件，并且在加载期间可以取消。
+     * 注意，XHR在IE 6或更早版本中不受支持，并且不推荐用于跨域加载。
+     */
     class XHRRequest extends AbstractLoader
     {
+        /**
+         * 
+         * @param item 定义要加载的文件的对象。请参阅 {@link LoadQueue.loadFile | loadFile} 了解支持的文件属性概述。
+         */
         constructor(item: Object);
 
         // methods
+        /**
+         * 从0.4.1版本开始可用
+         * 
+         * 获取XmlHttpRequest的所有响应头。
+         * 
+         * **从文档中:** 返回所有HTTP头，不包括以Set-Cookie或Set-Cookie2为不区分大小写的匹配项，作为单个字符串，每个头行用U+000D CR U+000A LF对分隔，不包括状态行，每个头名称和头值用U+003A COLON U+0020 SPACE对分隔。
+         * @returns 所有响应头。
+         */
         getAllResponseHeaders(): string;
+        /**
+         * 从0.4.1版本开始可用
+         * 
+         * 获取XmlHttpRequest的指定响应头。
+         * 
+         * **从文档中:** 返回与header匹配的响应头字段值，除非字段名称为Set-Cookie或Set-Cookie2。
+         * @param header 要获取的响应头名称。
+         * @returns 指定响应头的值。
+         */
         getResponseHeader(header: string): string;
     }
-
+    /**
+     * 一个用于XML文件的加载器。
+     */
     class XMLLoader extends AbstractLoader
     {
         constructor(loadItem: Object);
-
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.XML | XML}的项目。
+         * @param item LoadQueue尝试加载的LoadItem
+         * @returns 加载器是否可以加载该项目
+         */
         static canLoadItem(item: Object): boolean;
     }
+    /**
+     * 从0.6.0版本开始可用
+     * 
+     * 一个用于所有其他插件的默认插件类。
+     */
     class AbstractPlugin
     {
         // methods
+        /**
+         * 创建一个声音实例。如果声音未预加载，则在此处内部预加载。
+         * @param src 要使用的声音源。
+         * @param startTime Audio sprite property used to apply an offset, in milliseconds.
+         * @param duration Audio sprite property used to set the time the clip plays for, in milliseconds.
+         * @returns A sound instance for playback and control.
+         */
         create(src: string, startTime: number, duration: number): AbstractSoundInstance;
+        /**
+         * 获取插件的主音量,该音量会影响所有的声音实例。
+         * @returns 音量级别,介于0和1之间。
+         */
         getVolume(): number;
+        /**
+         * 检查指定音频源的预加载是否已完成。
+         * @param src 要加载的音频URI。
+         */
         isPreloadComplete(src: string): boolean;
+        /**
+         * 检查指定音频源的预加载是否已开始。如果找到该音频源,我们可以假定它正在加载或已经完成加载。
+         * @param src 要检查的音频URI。
+         */
         isPreloadStarted(src: string): boolean;
+        /**
+         * 判断该插件是否可以在当前浏览器/操作系统中使用。
+         * @returns 插件是否可以初始化。
+         */
         isSupported(): boolean;
+        /**
+         * 内部预加载一个音频。
+         * @param loader 要加载的音频URI。
+         */
         preload(loader: Object): void;
-        register(loadItem: string, instances: number): Object;
+        /**
+         * 预先注册一个音频用于预加载和设置。这由{@link Sound}调用。
+         * 注意所有插件都提供一个`Loader`实例,{@link PreloadJS}可以使用它来辅助预加载。
+         * @param loadItem 包含音频源的对象。注意不是每个插件都会管理这个值。
+         * @returns 一个结果对象,包含用于预加载目的的"tag"。
+         */
+        register(loadItem: string): Object;
+        /**
+         * 移除所有使用WebAudioPlugin/register添加的音频。注意这不会取消预加载。
+         * @param src 要卸载的音频URI。
+         */
         removeAllSounds(src: string): void;
+        /**
+         * 移除使用WebAudioPlugin/register添加的一个音频。注意这不会取消预加载。
+         * @param src 要卸载的音频URI。
+         */
         removeSound(src: string): void;
+        /**
+         * 通过插件静音所有音频。
+         * @param value 是否应该静音所有音频。注意插件级别的静音只是查找Sound的静音值,所以这个属性在这里没有使用。
+         * @returns 静音调用是否成功。
+         */
         setMute(value: boolean): boolean;
+        /**
+         * 设置插件的主音量,该音量会影响所有的声音实例。
+         * @param value 要设置的音量,介于0和1之间。
+         * @returns 如果插件处理了setVolume调用则返回true。否则Sound类将手动影响所有实例。
+         */
         setVolume(value: number): boolean;
     }
 
