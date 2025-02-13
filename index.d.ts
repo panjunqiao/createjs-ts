@@ -5301,40 +5301,108 @@ declare namespace createjs {
          */
         unregisterLoader(loader: AbstractLoader): void;
     }
-
+    /**
+     * JSON清单的加载器。清单内的项目会在加载器完成前加载。
+     * 要使用JSONP加载清单，需要在LoadItem中指定一个回调函数。
+     * 
+     * 清单中的文件列表必须在顶层JSON对象的manifest属性中定义。
+     * 以下示例展示了一个示例清单定义，以及如何包含子清单。
+     * ```js
+     * {
+     *     "path": "assets/",
+     *     "manifest": [
+     *         "image.png",
+     *         {"src": "image2.png", "id":"image2"},
+     *         {"src": "sub-manifest.json", "type":"manifest", "callback":"jsonCallback"}
+     *     ]
+     * }
+     * ```
+     * 当ManifestLoader完成加载时，
+     * 父加载器（通常是一个LoadQueue，但也可以是另一个ManifestLoader）将继承所有加载的项，
+     * 因此可以直接访问它们。
+     * 
+     * 注意，JSONLoader和JSONPLoader是优先级更高的加载器，
+     * 因此清单必须设置LoadItem的type属性为MANIFEST。
+     * 
+     * 此外，某些浏览器要求服务器提供JavaScript的mime类型用于JSONP，
+     * 因此在某些条件下可能无法正常工作。
+     */
     class ManifestLoader extends AbstractLoader
     {
         constructor(loadItem: LoadItem | Object);
 
         // methods
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link MANIFEST}的项目
+         * @param item LoadQueue尝试加载的LoadItem
+         * @returns 加载器是否可以加载该项目
+         */
         static canLoadItem(item: LoadItem | Object): boolean;
     }
-
+    /**
+     * 一个用于加载HTML标签的{@link TagRequest}，用于视频和音频。
+     */
     class MediaTagRequest
     {
+        /**
+         * 
+         * @param loadItem 
+         * @param tag 
+         * @param srcAttribute 指定源的标签属性,例如 "src"、"href" 等。
+         */
         constructor(loadItem: LoadItem, tag: HTMLAudioElement | HTMLVideoElement, srcAttribute: string);
     }
-
+    /**
+     * 保存库特定信息(如版本和构建日期)的静态类。
+     */
     class PreloadJS
     {
+        /**
+         * 此版本构建的UTC格式日期。
+         */
         static buildDate: string;
+        /**
+         * 此版本的版本号字符串。
+         */
         static version: string;
     }
-
+    /**
+     * 一个CreateJS事件，当进度变化时触发。
+     */
     class ProgressEvent
     {
+        /**
+         * 
+         * @param loaded 已加载的数量。这个数量可以相对于总数。
+         * @param total 将要加载的总数量。这个数量默认是1，所以如果`已加载`的数量是百分比(0到1之间)，可以省略。
+         */
         constructor(loaded: number, total?: number);
 
         // properties
+        /**
+         * 已加载的数量(相对于总数)。
+         */
         loaded: number;
+        /**
+         * 加载的百分比(0到1之间)。这个百分比是使用`已加载`除以`总数`计算的。
+         * @default 0
+         */
         progress: number;
+        /**
+         * 将要加载的总数量。
+         * @default 1
+         */
         total: number;
 
         // methods
+        /**
+         * 返回ProgressEvent实例的副本。
+         * @returns ProgressEvent实例的副本。
+         */
         clone(): ProgressEvent;
     }
     /**
-     * 帮助解析加载项和确定文件类型等。
+     * 用于解析加载项、确定文件类型等的实用程序。
      */
     class RequestUtils
     {
@@ -5368,18 +5436,39 @@ declare namespace createjs {
         static isVideoTag(item: Object): boolean;
         static parseURI(path: string): Object;
     }
-
-    class SoundLoader extends AbstractLoader
+    /**
+     * 一个用于HTML音频文件的加载器。
+     * PreloadJS不能加载WebAudio文件，因为需要一个WebAudio上下文，应该由一个播放声音的库(如{@link SoundJS})或一个处理音频播放的外部框架来创建。
+     * 要加载可以由WebAudio播放的内容，请使用{@link BinaryLoader}，并手动处理音频上下文解码。
+     */
+    class SoundLoader extends AbstractMediaLoader
     {
-        constructor(loadItem: Object, preferXHR: boolean);
-
-        static canLoadItem(item: Object): boolean;
+        constructor(loadItem: LoadItem|Object, preferXHR: boolean);
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.SOUND | SOUND}的项目。
+         * @param item LoadQueue尝试加载的LoadItem
+         * @returns 加载器是否可以加载该项目
+         */
+        static canLoadItem(item: LoadItem|Object): boolean;
     }
-
+    /**
+     * 一个用于EaselJS SpriteSheets的加载器。SpriteSheet定义中的图像在加载器完成前加载。
+     * 要使用JSONP加载SpriteSheet，请在{@link LoadItem}中指定一个{@link LoadItem.callback | 回调函数}。
+     * 注意，{@link JSONLoader}和{@link JSONPLoader}是优先级更高的加载器，所以SpriteSheets**必须**设置{@link LoadItem}的{@link LoadItem.type | type}属性为{@link Types.SPRITESHEET | SPRITESHEET}。
+     * 
+     * 加载项的{@link LoadItem.crossOrigin | crossOrigin}属性以及{@link LoadQueue}的`basePath`参数和LoadQueue/_preferXHR属性传递给加载SpriteSheet图像的子清单。
+     * 
+     * 注意，SpriteSheet JSON不尊重LoadQueue/_preferXHR:property属性，应该根据SpriteSheet加载项上是否存在{@link LoadItem.callback | callback}属性来确定。
+     * 这是因为JSON加载的格式会根据是否作为JSON加载而有所不同，所以只改变`preferXHR`是不够的。
+     */
     class SpriteSheetLoader extends AbstractLoader
     {
         constructor(loadItem: Object);
-
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.SPRITESHEET | SPRITESHEET}的项目。
+         * @param item LoadQueue尝试加载的LoadItem
+         * @returns 加载器是否可以加载该项目
+         */
         static canLoadItem(item: Object): boolean;
     }
 
