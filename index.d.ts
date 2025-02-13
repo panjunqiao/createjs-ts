@@ -154,7 +154,8 @@ declare namespace createjs {
      * 
      * 将EventDispatcher功能添加到"MyClass"类中。
      * ```js
-     * EventDispatcher.initialize(MyClass.prototype);
+     * EventDispatcher.initialize(MyClass.prototype); // add to the prototype of the class
+     * EventDispatcher.initialize(myObject); // add to a specific instance
      * ```
      * 添加事件（请参阅{@link addEventListener}）。
      * ```js
@@ -4733,7 +4734,7 @@ declare namespace createjs {
          * @param raw 确定返回的结果是否是格式化的内容，还是原始加载的数据（如果存在）。
          * @returns 返回加载器加载的内容。
          */
-        getResult(raw?: boolean): Object;
+        //getResult(raw?: boolean): Object;
         /**
          * 从0.6.0版本开始可用
          * 
@@ -4760,6 +4761,67 @@ declare namespace createjs {
          * @param tag 标签实例。
          */
         setTag(tag: Object): void;
+        // Events
+        /**
+         * 当整体进度变化时触发。在0.6.0版本之前，这只是{{#crossLink "Event"}}{{/crossLink}}。
+         * @event progress
+         * @since 0.3.0
+         */
+ 
+        /**
+         * 当加载开始时触发。
+         * @event loadstart
+         * @param {Object} target The object that dispatched the event.
+         * @param {String} type The event type.
+         * @since 0.3.1
+         */
+ 
+        /**
+         * 当整个队列加载完成时触发。
+         * @event complete
+         * @param {Object} target The object that dispatched the event.
+         * @param {String} type The event type.
+         * @since 0.3.0
+         */
+ 
+        /**
+         * 当加载器遇到错误时触发。如果错误是由文件引起的，事件将包含导致错误的项目。在0.6.0版本之前，这只是{{#crossLink "Event"}}{{/crossLink}}。
+         * @event error
+         * @since 0.3.0
+         */
+ 
+        /**
+         * 当加载器遇到内部文件加载错误时触发。这使加载器可以维护内部队列，并显示文件加载错误。
+         * @event fileerror
+         * @param {Object} target The object that dispatched the event.
+         * @param {String} type The event type ("fileerror")
+         * @param {LoadItem|object} The item that encountered the error
+	     * @since 0.6.0
+	     */
+ 
+        /**
+         * 当加载器内部加载文件时触发。这使{{#crossLink "ManifestLoader"}}{{/crossLink}}等加载器可以维护内部{{#crossLink "LoadQueue"}}{{/crossLink}}s
+         * 并通知它们何时加载文件。{{#crossLink "LoadQueue"}}{{/crossLink}}类分派一个稍微不同的{{#crossLink "LoadQueue/fileload:event"}}{{/crossLink}}事件。
+         * @event fileload
+         * @param {Object} target The object that dispatched the event.
+         * @param {String} type The event type ("fileload")
+	     * @param {Object} item The file item which was specified in the {{#crossLink "LoadQueue/loadFile"}}{{/crossLink}}
+	     * or {{#crossLink "LoadQueue/loadManifest"}}{{/crossLink}} call. If only a string path or tag was specified, the
+	     * object will contain that value as a `src` property.
+	     * @param {Object} result The HTML tag or parsed result of the loaded item.
+	     * @param {Object} rawResult The unprocessed result, usually the raw text or binary data before it is converted
+	     * to a usable object.
+	     * @since 0.6.0
+	     */
+ 
+        /**
+         * 当内部请求被创建后，但在加载之前触发。
+         * 这允许对加载器进行特定加载需求的更新，例如二进制或XHR图像加载。
+         * @event initialize
+         * @param {Object} target The object that dispatched the event.
+         * @param {String} type The event type ("initialize")
+         * @param {AbstractLoader} loader The loader that has been initialized.
+	    */
     }
     /**
      * 所有媒体加载器扩展的基类，如Video和Audio。
@@ -4793,89 +4855,249 @@ declare namespace createjs {
          */
         load(): void;
     }
-
+    /**
+     * 一个用于加载二进制文件的加载器。这对于加载Web音频或需要ArrayBuffer的内容非常有用。
+     */
     class BinaryLoader extends AbstractLoader
     {
-        constructor(loadItem: Object);
+        constructor(loadItem: LoadItem|Object);
 
         // methods
-        static canLoadItem(item: Object): boolean;
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为BINARY的项目。
+         * @param item LoadQueue尝试加载的LoadItem。
+         * @returns 加载器是否可以加载该项目。
+         */
+        static canLoadItem(item: LoadItem|Object): boolean;
     }
-
+    /**
+     * 一个用于加载CSS文件的加载器。
+     */
     class CSSLoader extends AbstractLoader
     {
         constructor(loadItem: Object, preferXHR: boolean);
 
         // methods
-        canLoadItem(item: Object): boolean;
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为CSS的项目。
+         * @param item LoadQueue尝试加载的LoadItem。
+         * @returns 加载器是否可以加载该项目。
+         */
+        static canLoadItem(item: Object): boolean;
     }
 
-    export module DataUtils
+    /*export module DataUtils
     {
         export function parseJSON(value: string): Object;
         export function parseXML(text: string, type: string): XMLDocument;
+    }*/
+    /**
+     * 一些用于格式化不同数据类型的实用程序。
+     */
+    class DataUtils
+    {
+        /**
+         * 将字符串解析为对象。
+         * @param value 已加载的JSON字符串
+         * @returns 返回JavaScript对象。
+         */
+        parseJSON(value: string): Object;
+        /**
+         * 使用DOM解析XML。这在预加载XML或SVG时是必需的。
+         * @param text 由XHR加载的原始文本或XML。
+         * @returns 返回解析后的XML文档。
+         */
+        static parseXML(text: string): XMLDocument;
     }
-
+    /**
+     * 一个通用的错误事件，描述发生的错误以及任何相关细节。
+     */
     class ErrorEvent
     {
+        /**
+         * 
+         * @param title 错误标题
+         * @param message 错误描述
+         * @param data 附加的错误数据
+         */
         constructor(title?: string, message?: string, data?: Object);
 
         // properties
+        /**
+         * 附加到错误的数据。
+         */
         data: Object;
+        /**
+         * 详细的错误消息，包含有关错误的详细信息。
+         */
         message: string;
+        /**
+         * 错误标题，指示发生错误的类型。
+         */
         title: string;
     }
-
+    /**
+     * 一个用于加载图像的加载器。
+     */
     class ImageLoader extends AbstractLoader
     {
-        constructor(loadItem: Object, preferXHR: boolean);
-
+        constructor(loadItem: LoadItem|Object, preferXHR: boolean);
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.IMAGE | IMAGE}的项目。
+         * @param item LoadQueue尝试加载的LoadItem。
+         * @returns 加载器是否可以加载该项目。
+         */
         static canLoadItem(item: Object): boolean;
     }
-
+    /**
+     * 一个用于加载JavaScript文件的加载器。
+     */
     class JavaScriptLoader extends AbstractLoader
     {
         constructor(loadItem: Object, preferXHR: boolean);
-
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.JAVASCRIPT | JAVASCRIPT}的项目。
+         * @param item LoadQueue尝试加载的LoadItem。
+         * @returns 加载器是否可以加载该项目。
+         */
         static canLoadItem(item: Object): boolean;
     }
-
+    /**
+     * 一个用于加载JSON文件的加载器。
+     */
     class JSONLoader extends AbstractLoader
     {
         constructor(loadItem: Object);
-
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.JSON | JSON}的项目。
+         * @param item LoadQueue尝试加载的LoadItem。
+         * @returns 加载器是否可以加载该项目。
+         */
         static canLoadItem(item: Object): boolean;
     }
-
+    /**
+     * 一个用于加载JSONP文件的加载器。
+     */
     class JSONPLoader extends AbstractLoader
     {
         constructor(loadItem: Object);
-
+        /**
+         * 确定加载器是否可以加载特定项目。此加载器只能加载类型为{@link Types.JSONP | JSONP}的项目。
+         * @param item LoadQueue尝试加载的LoadItem。
+         * @returns 加载器是否可以加载该项目。
+         */
         static canLoadItem(item: Object): boolean;
     }
-
+    /**
+     * 所有加载器都接受包含此类定义的属性的项目。
+     * 如果传递一个原始对象而不是LoadItem，它将不会受到影响，但必须至少包含一个Src:property属性。
+     * 一个字符串路径或HTML标签也是可接受的，但将自动使用{@link AbstractLoader}的Create方法转换为LoadItem。
+     */
     class LoadItem
     {
         // properties
+        /**
+         * 一个用于JSONP请求的回调函数，定义了当JSONP内容加载时调用的全局方法。
+         * @default null
+         */
         callback: string;
+        /**
+         * 设置CORS-enabled images loading cross-domain的crossOrigin属性。
+         * @default Anonymous
+         */
         crossOrigin: boolean;
+        /**
+         * 一个任意数据对象，与加载的对象一起包含。
+         * @default null
+         */
         data: Object;
+        /**
+         * 要附加到XHR请求的头部对象。
+         * PreloadJS会在需要时自动附加一些默认头部，包括"Origin"、"Content-Type"和"X-Requested-With"。
+         * 您可以通过在headers对象中包含它们来覆盖默认头部。
+         * @default null
+         */
         headers: Object;
+        /**
+         * 一个字符串标识符，可以用于引用加载的对象。如果未提供，此标识符将自动设置为Src:property。
+         * @default null
+         */
         id: string;
+        /**
+         * 默认等待请求超时的时间（以毫秒为单位）。
+         * 这仅适用于基于标签和XHR（级别1）的加载，因为XHR（级别2）提供了自己的超时事件。
+         */
+        static LOAD_TIMEOUT_DEFAULT:number;
+        /**
+         * 等待请求超时的时间（以毫秒为单位）。
+         * 这仅适用于基于标签和XHR（级别1）的加载，因为XHR（级别2）提供了自己的超时事件。
+         * @default 8000 (8 秒)
+         */
         loadTimeout: number;
+        /**
+         * 确定一个清单是否将维护此项目的顺序，相对于清单中还设置了maintainOrder属性为true的其他项目。
+         * 这仅适用于maxConnections设置为大于1（使用setMaxConnections）的情况。
+         * 设置为false的项将按其加载顺序完成。
+         * 当maintainScriptOrder设置为true时，有序项目将与脚本标签一起按顺序加载。
+         * @default false
+         */
         maintainOrder: boolean;
+        /**
+         * HTTP请求使用的请求方法。支持GET和POST请求类型，定义在AbstractLoader上。
+         * @default GET
+         */
         method: string;
+        /**
+         * 设置XHR请求的MIME类型。这会自动设置为"text/plain; charset=utf-8"，适用于文本文件（json, xml, text, css, js）。
+         * @default null
+         */
         mimeType: string;
+        /**
+         * 正在加载的文件的源。此属性是**必需的**。源可以是字符串（推荐），也可以是HTML标签。也可以是一个对象，但这种情况它必须包含一个类型并由插件处理。
+         * @default null
+         */
         src: string;
+        /**
+         * 正在加载的文件的类型。文件的类型通常由扩展名推断，但也可以手动设置。这在文件没有扩展名的情况下非常有用。
+         * @default null
+         */
         type: string;
+        /**
+         * 一个对象哈希，包含要发送到服务器的名称/值对。
+         * @default null
+         */
         values: Object;
+        /**
+         * 启用XHR请求的凭证。
+         * @default false
+         */
         withCredentials: boolean;
 
         // methods
+        /**
+         * 创建一个LoadItem。
+         * - 字符串类型的项被转换为具有填充的Src:property的LoadItem。
+         * - LoadItem实例按原样返回
+         * - 对象返回带有任何需要的属性
+         * @param value 要创建的LoadItem对象或字符串或对象。
+         * @returns 返回LoadItem对象。
+         */
         static create(value: LoadItem | string | Object): Object | LoadItem;
+        /**
+         * 提供一个链式快捷方法，用于在实例上设置多个属性。
+         *
+         * #### 示例
+         * ```js
+         * var loadItem = new createjs.LoadItem().set({src:"image.png", maintainOrder:true});
+         * ```
+         * @param props 一个通用对象，包含要复制到LoadItem实例的属性。
+         * @returns 返回调用该方法的实例（对链式调用很有用）。
+         */
         set(props: Object): LoadItem;
     }
-
+    /**
+     * 一个用于加载队列的加载器。
+     */
     class LoadQueue extends AbstractLoader
     {
         constructor(preferXHR?: boolean, basePath?: string, crossOrigin?: string | boolean);
