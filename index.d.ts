@@ -5636,41 +5636,109 @@ declare namespace createjs {
          */
         setVolume(value: number): boolean;
     }
-
+    /**
+     * 当调用Sound API方法的{@link play}或{@link createInstance}时，会创建一个AbstractSoundInstance。AbstractSoundInstance由活动插件返回，供用户控制。
+     *
+     * #### 示例:
+     * ```js
+     * var myInstance = createjs.Sound.play("myAssetPath/mySrcFile.mp3");
+     * ```
+     * 可以通过多个附加参数快速确定声音的播放方式。有关参数的列表，请参阅Sound API方法的{@link play}。
+     *
+     * 创建AbstractSoundInstance后，可以存储一个引用，以便通过AbstractSoundInstance直接控制音频。
+     * 如果不存储引用，AbstractSoundInstance将播放其音频（以及任何循环），然后从Sound类中取消引用，以便进行清理。
+     * 如果音频播放已完成，只需调用{@link play}实例方法即可重新建立{@link Sound}类所需的引用以进行控制。
+     * ```js
+     * var myInstance = createjs.Sound.play("myAssetPath/mySrcFile.mp3", {loop:2});
+     * myInstance.on("loop", handleLoop);
+     * function handleLoop(event) {
+     *     myInstance.volume = myInstance.volume * 0.5;
+     * }
+     * ```
+     * 会从实例派发事件，以通知声音何时完成、循环或播放失败。
+     * ```js
+     * var myInstance = createjs.Sound.play("myAssetPath/mySrcFile.mp3");
+     * myInstance.on("complete", handleComplete);
+     * myInstance.on("loop", handleLoop);
+     * myInstance.on("failed", handleFailed);
+     * ```
+     */
     class AbstractSoundInstance extends EventDispatcher
     {
+        /**
+         * 构造函数
+         * @param src 音频源路径
+         * @param startTime 开始时间
+         * @param duration 持续时间
+         * @param playbackResource 播放资源
+         */
         constructor(src: string, startTime: number, duration: number, playbackResource: Object);
 
         // properties
+        /** 持续时间 */
         duration: number;
+        /** 循环次数 */
         loop: number;
+        /** 是否静音 */
         muted: boolean;
+        /** 立体声平衡 */
         pan: number;
+        /** 是否暂停 */
         paused: boolean;
+        /** 播放资源 */
         playbackResource: Object;
+        /** 播放状态 */
         playState: string;
+        /** 当前位置 */
         position: number;
+        /** 音频源路径 */
         src: string;
+        /** 唯一标识符 */
         uniqueId: number | string;
+        /** 音量 */
         volume: number;
 
         // methods
+        /** 销毁实例 */
         destroy(): void;
+        /** 获取持续时间 */
         getDuration(): number;
+        /** 获取循环次数 */
         getLoop(): number;
+        /** 获取是否静音 */
         getMute(): boolean;
+        /** 获取立体声平衡 */
         getPan(): number;
+        /** 获取是否暂停 */
         getPaused(): boolean;
+        /** 获取当前位置 */
         getPosition(): number;
+        /** 获取音量 */
         getVolume(): number;
+        /** 播放音频
+         * @param interrupt 中断参数
+         * @param delay 延迟时间
+         * @param offset 起始偏移量
+         * @param loop 循环次数
+         * @param volume 音量
+         * @param pan 立体声平衡
+         */
         play(interrupt?: string | Object, delay?: number, offset?: number, loop?: number, volume?: number, pan?: number): AbstractSoundInstance;
+        /** 设置持续时间 */
         setDuration(value: number): AbstractSoundInstance;
+        /** 设置循环次数 */
         setLoop(value: number): void;
+        /** 设置是否静音 */
         setMute(value: boolean): AbstractSoundInstance;
+        /** 设置立体声平衡 */
         setPan(value: number): AbstractSoundInstance;
+        /** 设置播放资源 */
         setPlayback(value: Object): AbstractSoundInstance;
+        /** 设置当前位置 */
         setPosition(value: number): AbstractSoundInstance;
+        /** 设置音量 */
         setVolume(value: number): AbstractSoundInstance;
+        /** 停止播放 */
         stop(): AbstractSoundInstance;
     }
 
