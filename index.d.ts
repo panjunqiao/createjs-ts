@@ -5576,9 +5576,9 @@ declare namespace createjs {
         /**
          * 创建一个声音实例。如果声音未预加载，则在此处内部预加载。
          * @param src 要使用的声音源。
-         * @param startTime Audio sprite property used to apply an offset, in milliseconds.
-         * @param duration Audio sprite property used to set the time the clip plays for, in milliseconds.
-         * @returns A sound instance for playback and control.
+         * @param startTime 音频精灵属性,用于设置偏移量,单位为毫秒。
+         * @param duration 音频精灵属性,用于设置音频片段的播放时长,单位为毫秒。
+         * @returns 返回一个用于播放和控制的声音实例。
          */
         create(src: string, startTime: number, duration: number): AbstractSoundInstance;
         /**
