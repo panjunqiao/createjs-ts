@@ -5103,12 +5103,57 @@ declare namespace createjs {
         constructor(preferXHR?: boolean, basePath?: string, crossOrigin?: string | boolean);
 
         // properties
+        /**
+         * 确保加载的脚本按指定顺序完成。
+         * 加载的脚本一旦加载就会添加到文档头部。
+         * 通过标签加载的脚本在this property为`true`时将一个接一个地加载，而通过XHR加载的脚本可以以任何顺序加载，但会在"finish"和按指定顺序添加到文档中。
+         * 
+         * 任何项目都可以通过在加载项上设置MaintainOrder:property属性来按顺序加载，或者通过确保一次只打开一个连接使用{@link setMaxConnections}。
+         * 注意，当`maintainScriptOrder`属性设置为`true`时，脚本项目会自动设置为`maintainOrder=true`，
+         * 并且在加载过程中更改`maintainScriptOrder`为`false`不会改变已经在队列中的项目。
+         * 
+         * #### 示例
+         * ```js
+         * var queue = new createjs.LoadQueue();
+         * queue.setMaxConnections(3); // Set a higher number to load multiple items at once
+         * queue.maintainScriptOrder = true; // 确保脚本按顺序加载
+         * queue.loadManifest([
+         *     "script1.js",
+         *     "script2.js",
+         *     "image.png", // 随时加载
+         *     {src: "image2.png", maintainOrder: true} // 等待script2.js
+         *     "image3.png",
+         *     "script3.js" // 等待image2.png加载（或XHR加载时完成）
+         * ]);
+         * ```
+         * @default true
+         */
         maintainScriptOrder: boolean;
+        /**
+         * 当当前队列完成时，要处理的下一个预加载队列。如果当前队列中抛出错误，并且{@link stopOnError为true}，则下一个队列将不会被处理。
+         * @default null
+         */
         next: LoadQueue;
+        /**
+         * 确定当遇到错误时，LoadQueue是否停止处理当前队列。
+         * @default false
+         */
         stopOnError: boolean;
 
         // methods
+        /**
+         * 关闭当前队列。关闭队列会完全清空队列，并阻止任何剩余的项目开始下载。注意，当前任何活动的加载将继续打开，并且事件可能会被处理。
+         * 
+         * 要停止和重新启动队列，请使用 {@link setPaused} 方法。
+         */
         close(): void;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 生成一个由该队列加载的项的列表。
+         * @param loaded 确定是否只返回已加载的项。如果为false，则in-progress和failed load items也将被包括。
+         * @returns 返回一个由该队列加载的项的列表。每个项目包括{@link LoadItem}、result和rawResult。
+         */
         getItems(loaded: boolean): Object[];
         /**
          * 通过id获取资源。
@@ -5141,19 +5186,119 @@ declare namespace createjs {
          * @param plugin 要安装的插件对象。
          */
         installPlugin(plugin: any): void;
-        loadFile(file: Object | string, loadNow?: boolean, basePath?: string): void;
+        /**
+         * 加载一个文件。要一次添加多个文件，请使用 {@link loadManifest} 方法。
+         * 
+         * 文件总是附加到当前队列中，所以这个方法可以多次使用来添加文件。要先清除队列，请使用 AbstractLoader/close 方法。
+         * @param file 要加载的文件对象或路径。文件可以是以下几种类型：
+         * - {@link LoadItem} 实例
+         * - 包含 {@link LoadItem} 定义的属性的对象
+         * - 资源路径字符串。注意，这种类型的加载项将在后台转换为 {@link LoadItem}。
+         * @param loadNow 立即加载（true）或等待加载调用（false）。默认值为true。如果使用 setPaused 暂停队列，并且值为true，则队列将自动恢复。
+         * @param basePath 一个基础路径，将添加到每个文件的前面。
+         * 注意，如果使用类型为MANIFEST的文件加载清单，其文件将不会使用basePath参数。basePath参数已弃用。在未来的版本中，这个参数将被删除。
+         * 请使用 LoadQueue 构造函数中的 basePath 参数，或者在清单定义中使用 path 属性。
+         */
+        loadFile(file: LoadItem | Object | string, loadNow?: boolean, basePath?: string): void;
+        /**
+         * 加载一个文件数组。要加载一个文件，请使用 {@link loadFile} 方法。
+         * 清单中的文件按相同的顺序请求，但如果在使用 {@link setMaxConnections} 设置大于1的maxConnections，则可能以不同的顺序完成。
+         * 脚本将按正确的顺序加载，只要LoadQueue/maintainScriptOrder为true（默认值）。
+         * 
+         * 文件总是附加到当前队列中，所以这个方法可以多次使用来添加文件。要先清除队列，请使用 AbstractLoader/close 方法。
+         * @param manifest 要加载的文件列表。loadManifest调用支持四种类型的清单:
+         * 1. 字符串路径，指向一个清单文件，该文件是一个JSON文件，包含一个"manifest"属性，用于定义要加载的文件列表，还可以包含一个"path"属性，该属性将添加到列表中每个文件的前面。
+         * 2. 一个定义了"src"的对象，src是一个JSON或JSONP文件。对于JSONP文件可以定义"callback"。
+         * JSON/JSONP文件应包含一个"manifest"属性，用于定义要加载的文件列表，还可以包含一个"path"属性，该属性将添加到列表中每个文件的前面。
+         * 3. 一个包含"manifest"属性的对象，用于定义要加载的文件列表，还可以包含一个"path"属性，该属性将添加到列表中每个文件的前面。
+         * 4. 要加载的文件数组。
+         * 
+         * 每个清单中的"file"可以是以下几种类型：
+         * - {@link LoadItem} 实例
+         * - 包含 {@link LoadItem} 定义的属性的对象
+         * - 资源路径字符串。注意，这种类型的加载项将在后台转换为 {@link LoadItem}。
+         * 
+         * @param manifest 一个包含要加载的文件的清单。
+         * @param loadNow 立即加载（true）或等待加载调用（false）。默认值为true。如果使用 {@link setPaused} 暂停队列，并且值为true，则队列将自动恢复。
+         * @param basePath 将添加到每个文件前面的基础路径。
+         * basePath参数会覆盖构造函数中指定的路径。
+         * 注意，如果使用类型为LoadQueue/MANIFEST的文件加载清单，其文件将**不会**使用basePath参数。
+         * **basePath参数已弃用**。在未来的版本中，这个参数将被删除。
+         * 请使用LoadQueue构造函数中的basePath参数，或者在清单定义中使用path属性。
+         */
         loadManifest(manifest: Object | string | any[], loadNow?: boolean, basePath?: string): void;
-        registerLoader(loader: AbstractLoader): void;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 注册一个自定义的加载器类。新的加载器将优先于较早添加的加载器和默认加载器。
+         * 建议加载器扩展{@link AbstractLoader}。加载器只能添加一次，并且将添加到可用加载器的列表中。
+         * @param loader 要添加的AbstractLoader类。
+         */
+        registerLoader(loader: AbstractLoader|Function): void;
+        /**
+         * 从0.3.0版本开始可用
+         * 
+         * 停止一个项目加载，并从队列中删除它。如果没有传递任何内容，所有项目都将被删除。这也将删除对已加载项目（s）的内部引用。
+         * 
+         * #### 示例
+         * ```js
+         * queue.loadManifest([
+         *     {src:"test.png", id:"png"},
+         *     {src:"test.jpg", id:"jpg"},
+         *     {src:"test.mp3", id:"mp3"}
+         * ]);
+         * queue.remove("png"); // 单个项目按ID删除
+         * queue.remove("png", "test.jpg"); // 作为参数的项。混合id和src。
+         * queue.remove(["test.png", "jpg"]); // 在数组中的项。混合id和src。
+         * ```
+         * @param idsOrUrls 要删除的ID或URL。您可以传递一个项目、一个项目数组或多个项目作为参数。
+         */
         remove(idsOrUrls: string | any[]): void;
+        /**
+         * 从0.3.0版本开始可用
+         * 
+         * 停止所有排队和加载的项目，并清除队列。这也将删除对已加载内容的所有内部引用，并允许再次使用队列。
+         */
         removeAll(): void;
+        /**
+         * 从0.3.0版本开始可用
+         * 
+         * 停止所有打开的加载，销毁任何已加载的项目，并重置队列，以便所有项目可以再次通过调用{@link load}重新加载。
+         * 项目不会从队列中删除。要删除项目，请使用{@link remove}或{@link removeAll}方法。
+         */
         reset(): void;
+        /**
+         * 设置最大并发连接数。
+         * 注意，浏览器和服务器可能有一个内置的最大打开连接数，所以任何额外的连接可能会在浏览器打开连接之前处于挂起状态。
+         * 当使用标签加载脚本，并且{@link maintainScriptOrder}为`true`时，由于浏览器限制，一次只加载一个脚本。
+         * 
+         * #### 示例
+         * ```js
+         * var queue = new createjs.LoadQueue();
+         * queue.setMaxConnections(10); // 允许10个并发加载
+         * ```
+         * @param value 允许的并发加载数量。默认情况下，每个LoadQueue在任何时候只打开一个连接。
+         */
         setMaxConnections(value: number): void;
+        /**
+         * 暂停或恢复当前加载。活动加载不会被取消，但在活动加载完成后，队列中的下一个项目不会被处理。LoadQueues默认情况下不会暂停。
+         * 
+         * 注意，如果使用{@link loadFile}或{@link loadManifest}添加新项目，暂停的队列将恢复，除非loadNow参数为false。
+         * @param value 队列是否应该暂停。
+         */
         setPaused(value: boolean): void;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 更改PreferXHR:property的值。注意，如果设置为true，它可能会失败，或者根据浏览器的能力和加载类型被忽略。
+         * @param value 如果为true，则优先使用XHR。如果为false，则优先使用标签。
+         * @returns 成功设置的PreferXHR的值。
+         */
         setPreferXHR(value: boolean): boolean;
         /**
-         * @deprecated - use 'preferXHR' property instead (or setUseXHR())
+         * 删除使用RegisterLoader添加的自定义加载器。只能注销自定义加载器，默认加载器将始终可用。
+         * @param loader 要移除的 AbstractLoader 类
          */
-        setUseXHR(value: boolean): void;
         unregisterLoader(loader: AbstractLoader): void;
     }
 
