@@ -5666,111 +5666,247 @@ declare namespace createjs {
     class AbstractSoundInstance extends EventDispatcher
     {
         /**
-         * 构造函数
-         * @param src 音频源路径
-         * @param startTime 开始时间
-         * @param duration 持续时间
-         * @param playbackResource 播放资源
+         * 
+         * @param src 音频文件的路径和名称
+         * @param startTime 音频精灵属性，用于设置起始偏移量（毫秒）
+         * @param duration 音频精灵属性，用于设置片段播放时长（毫秒）
+         * @param playbackResource 插件支持音频播放所需的资源
          */
         constructor(src: string, startTime: number, duration: number, playbackResource: Object);
 
         // properties
-        /** 持续时间 */
+        /** 
+         * 从0.6.0版本开始可用
+         * 
+         * 获取或设置音频片段的长度（以毫秒为单位）
+         * @default 0
+         */
         duration: number;
-        /** 循环次数 */
+        /** 
+         * 从0.6.0版本开始可用
+         * 
+         * 剩余播放循环次数，负值表示无限循环
+         * @default 0
+         */
         loop: number;
-        /** 是否静音 */
+        /** 
+         * 从0.6.0版本开始可用
+         * 
+         * 设置或获取当前音频实例是否静音
+         * @default false
+         */
         muted: boolean;
-        /** 立体声平衡 */
+        /** 
+         * 从0.6.0版本开始可用
+         * 
+         * 声音的左右声道平衡值（-1 左声道 ~ 1 右声道），注意HTML音频不支持此属性
+         * 
+         * 注意：在WebAudioPlugin中这仅提供实际3D音频的"x"轴值
+         * @default 0
+         */
         pan: number;
-        /** 是否暂停 */
+        /** 
+         * 从0.6.0版本开始可用
+         * 
+         * 获取音频是否处于暂停状态
+         * @default false
+         */
         paused: boolean;
-        /** 播放资源 */
+        /** 
+         * 保存插件特定播放资源的对象。由插件内部设置。
+         * 例如：WebAudioPlugin设置数组缓冲区，HTMLAudioPlugin设置标签，FlashAudioPlugin设置Flash引用
+         * @default null
+         */
         playbackResource: Object;
-        /** 播放状态 */
+        /** 
+         * 声音的播放状态，状态常量定义在{@link Sound}中
+         * @default null
+         */
         playState: string;
-        /** 当前位置 */
+        /** 
+         * 从0.6.0版本开始可用
+         * 
+         * 获取或设置播放头位置（毫秒），可在播放、暂停或停止时设置
+         * @default 0
+         */
         position: number;
-        /** 音频源路径 */
+        /** 
+         * 声音源文件路径
+         * @default null
+         */
         src: string;
-        /** 唯一标识符 */
+        /**
+         * 从0.6.1版本开始可用
+         * 
+         * 音频精灵属性，用于确定起始偏移量
+         * @default 0
+         */
+        startTime:number;
+        /** 
+         * 实例的唯一ID，由{@link Sound}设置
+         * @default -1
+         */
         uniqueId: number | string;
-        /** 音量 */
+        /** 
+         * 音量值（0~1之间）
+         * 
+         * 实际输出音量计算公式：`myInstance.volume * createjs.Sound._getVolume();`
+         * @default 1
+         */
         volume: number;
 
         // methods
-        /** 销毁实例 */
-        destroy(): void;
-        /** 获取持续时间 */
-        getDuration(): number;
-        /** 获取循环次数 */
-        getLoop(): number;
-        /** 获取是否静音 */
-        getMute(): boolean;
-        /** 获取立体声平衡 */
-        getPan(): number;
-        /** 获取是否暂停 */
-        getPaused(): boolean;
-        /** 获取当前位置 */
-        getPosition(): number;
-        /** 获取音量 */
-        getVolume(): number;
-        /** 播放音频
-         * @param interrupt 中断参数
-         * @param delay 延迟时间
-         * @param offset 起始偏移量
-         * @param loop 循环次数
-         * @param volume 音量
-         * @param pan 立体声平衡
+        /** 
+         * 从0.6.1版本开始可用
+         * 
+         * 接受一个PlayPropsConfig对象或包含相同属性的普通对象，并将其设置为此实例的属性。
+         * @param playProps 一个PlayPropsConfig对象或包含相同属性的普通对象
+         * @returns 返回自身引用，用于链式调用
          */
-        play(interrupt?: string | Object, delay?: number, offset?: number, loop?: number, volume?: number, pan?: number): AbstractSoundInstance;
-        /** 设置持续时间 */
-        setDuration(value: number): AbstractSoundInstance;
-        /** 设置循环次数 */
-        setLoop(value: number): void;
-        /** 设置是否静音 */
-        setMute(value: boolean): AbstractSoundInstance;
-        /** 设置立体声平衡 */
-        setPan(value: number): AbstractSoundInstance;
-        /** 设置播放资源 */
-        setPlayback(value: Object): AbstractSoundInstance;
-        /** 设置当前位置 */
-        setPosition(value: number): AbstractSoundInstance;
-        /** 设置音量 */
-        setVolume(value: number): AbstractSoundInstance;
-        /** 停止播放 */
+        applyPlayProps(playProps:PlayPropsConfig | Object):AbstractSoundInstance;
+        /** 
+         * 从0.6.0版本开始可用
+         * 
+         * 从AbstractSoundInstance中移除所有外部引用和资源。
+         * 注意：此操作是不可逆的，AbstractSoundInstance将不再工作。
+         */
+        destroy(): void;
+        /** 
+         * @param props PlayPropsConfig实例或包含播放参数的对象
+         * @returns 返回自身引用用于链式调用
+         * 播放声音实例（适用于已存在的SoundInstance）
+         * 
+         * #### 示例
+         * ```js
+         * var myInstance = createjs.Sound.createInstance(mySrc);
+         * myInstance.play({interrupt:createjs.Sound.INTERRUPT_ANY, loop:2, pan:0.5});
+         * ```
+         * 注意：如果声音已在播放中，仍会设置传入参数
+         * 
+         * #### 参数已弃用
+         * 
+         * 此方法的参数已弃用，建议使用单个参数，该参数可以是Object或{@link PlayPropsConfig}。
+         */
+        play(props:PlayPropsConfig | Object): AbstractSoundInstance;
+        /** 
+         * 停止播放（会重置播放位置到0，之后无法恢复）
+         * 
+         * #### 示例
+         * ```js
+         * myInstance.stop();
+         * ```
+         * 提示：如需保留播放位置请使用 paused = true
+         */
         stop(): AbstractSoundInstance;
     }
 
+    /**
+     * Flash音频加载器，提供通过PreloadJS预加载Flash内容的机制
+     */
     class FlashAudioLoader extends AbstractLoader
     {
         // properties
+        /**
+         * @default null
+         * 用于与Flash通信的ID（内部使用，不应修改）
+         */
         flashId: string;
-
         // methods
+        /**
+         * 设置Flash实例并开始加载
+         * @param flash 处理加载和播放的Flash实例
+         */
         setFlash(flash: Object): void;
     }
-
+    /**
+     * 使用Flash实例播放音频。
+     * 默认情况下不使用此插件，必须通过Sound的registerPlugins方法手动注册。
+     * 如果需要支持旧版浏览器（如IE8）的音频功能，建议包含此插件。
+     * 
+     * 此插件需要FlashAudioPlugin.swf和swfObject.js，这些文件已编译到minified的FlashAudioPlugin-X.X.X.min.js文件中。
+     * 使用此插件时，必须确保设置swfPath，以便脚本可以找到swf文件。
+     * 
+     * #### 示例
+     * ```js
+     * createjs.FlashAudioPlugin.swfPath = "../src/soundjs/flashaudio";
+     * createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashAudioPlugin]);
+     * // 如果WebAudio和HTMLAudio无法工作，则添加FlashAudioPlugin作为后备。
+     * ```
+     * #### Example
+     * ```js
+     * createjs.FlashAudioPlugin.swfPath = "../src/soundjs/flashaudio";
+     * createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashAudioPlugin]);
+     * // 如果WebAudio和HTMLAudio无法工作，则添加FlashAudioPlugin作为后备。
+     * ```
+     * 注意：SWF文件嵌入到具有id和classname为"SoundJSFlashContainer"的容器DIV中，
+     * 并且将具有id为"flashAudioContainer"的DIV。
+     * 容器DIV定位在屏幕左侧1像素外以避免显示1x1像素的白框。
+     * 
+     * #### 已知浏览器和操作系统问题
+     * 
+     * #### 所有浏览器
+     * - 在Flash播放器开始播放音频时可能会有延迟。这在Firefox中最为明显。不幸的是，这是Flash播放器和浏览器的问题，因此无法通过SoundJS解决。
+     */
     class FlashAudioPlugin extends AbstractPlugin
     {
         // properties
+        /**
+         * 当前版本的构建日期（UTC格式）。
+         */
+        static buildDate: string;
+        /**
+         * 标识Flash对象是否已初始化完成。
+         * 需要从JavaScript调用`ExternalInterface`方法到Flash。
+         * @default false
+         */
         flashReady: boolean;
+        /**
+         * 开发者调试标志（启用后输出所有Flash事件到控制台）。
+         * 
+         * ```js
+         * createjs.Sound.activePlugin.showOutput = true;
+         * ```
+         * @default false
+         */
         showOutput: boolean;
+        /**
+         * 从0.5.2版本开始可用
+         * 
+         * FlashAudioPlugin.swf文件相对于HTML页面的路径。
+         * 请注意，如果此路径不正确，该插件将无法工作。
+         * @default src/SoundJS
+         */
         static swfPath: string;
-
+        /** 版本号 */
+        static version: string;
         // methods
+        /**
+         * 检测当前浏览器/系统是否支持此插件
+         * @returns 是否支持
+         */
         static isSupported(): boolean;
     }
-
+    /**
+     * FlashAudioSoundInstance扩展了{@link AbstractSoundInstance}的基础API，并由{@link FlashAudioPlugin}使用。
+     * 
+     * 注意：音频控制是通过Flash实例传递的。
+     */
     class FlashAudioSoundInstance extends AbstractSoundInstance
     {
+        /**
+         * 
+         * @param src 音频文件的路径和名称
+         * @param startTime 音频精灵属性，用于设置起始偏移量（毫秒）
+         * @param duration 音频精灵属性，用于设置片段播放时长（毫秒）
+         * @param playbackResource 插件支持音频播放所需的资源
+         */
         constructor(src: string, startTime: number, duration: number, playbackResource: Object);
     }
 
     /**
      * @deprecated - use FlashAudioPlugin
      */
-    class FlashPlugin {
+    /*class FlashPlugin {
         constructor();
 
         // properties
@@ -5791,18 +5927,68 @@ declare namespace createjs {
         removeSound(src: string): void;
         setMute(value: boolean): boolean;
         setVolume(value: number): boolean;
-    }
-
+    }*/
+    /**
+     * 使用HTML <audio> 标签在浏览器中播放音频。
+     * 此插件是默认安装的第二个优先级插件，位于{@link WebAudioPlugin}之后。
+     * 对于不支持HTML音频的旧版浏览器，请包含并安装{@link FlashAudioPlugin}。
+     * 
+     * #### 已知浏览器和操作系统问题
+     * 
+     * #### 所有浏览器
+     * 
+     * 测试显示，所有浏览器都有限制，允许多少个音频标签实例。
+     * 如果超过此限制，您可以预期会看到不可预测的结果。请使用{@link Sound.MAX_INSTANCES}作为指南，了解可以在所有浏览器中安全使用的音频标签总数。
+     * 此问题主要限于IE9。
+     * 
+     * #### IE html限制
+     * - 在播放开始后，音频标签的音量更改会出现延迟。
+     * 因此，如果您所有声音都静音，它们将在延迟期间全部播放，直到内部应用静音。
+     * 无论何时或如何应用音量更改，由于标签似乎需要播放才能应用，因此都会发生这种情况。
+     * - MP3编码不会总是适用于音频标签，如果它不是默认的。我们发现默认编码为64kbps时有效。
+     * - 偶尔非常短的样本会被截断。
+     * - 有关于可以加载或同时播放的音频标签数量的限制，似乎是由硬件和浏览器设置决定的。
+     * 请参阅{@link HTMLAudioPlugin.MAX_INSTANCES}以获得安全的估计。注意，音频精灵可以作为此问题的解决方案。
+     * 
+     * #### Safari限制
+     * - Safari 需要安装 QuickTime 才能进行音频播放。
+     * 
+     * #### iOS 6限制
+     * - 只能有一个<audio>标签
+     * - 无法预加载或自动播放音频
+     * - 无法缓存音频
+     * - 只能在用户触发的事件内播放音频
+     * - 注意：建议iOS (6+) 使用WebAudioPlugin
+     * - 使用音频精灵可以缓解部分问题，强烈建议在iOS上使用
+     * 
+     * #### Android原生浏览器限制
+     * - 我们无法控制音频音量。只有用户可以在他们的设备上设置音量。
+     * - 我们只能在用户事件（触摸/点击）内部播放音频。这目前意味着您不能循环声音或使用延迟。
+     * 
+     * #### Android Chrome 26.0.1410.58 特定限制
+     * - 同一时间只能播放一个声音
+     * - 音频不会被缓存
+     * - 音频只能在用户触发的触摸/点击事件中加载
+     * - 播放音频前会有延迟，推测是在加载音频源文件时产生
+     *
+     * 有关已知问题的通用说明，请参阅Sound类文档
+     */
     class HTMLAudioPlugin extends AbstractPlugin
     {
         constructor();
 
         // properties
-        defaultNumChannels: number;
-        enableIOS: boolean;     // deprecated
+        /**
+         * 最大实例数，此限制主要限于IE9。实际数量因浏览器而异（很大程度上取决于硬件），但这是一个安全的估计。音频精灵可以绕过此限制。
+         * @default 30
+         */
         static MAX_INSTANCES: number;
 
         // methods
+        /**
+         * 确定插件是否可以在当前浏览器/操作系统中使用。注意HTML音频在大多数现代浏览器中可用，但由于iOS系统的限制，该插件在iOS上被禁用。
+         * @returns 插件是否可以初始化
+         */
         static isSupported(): boolean;
     }
 
