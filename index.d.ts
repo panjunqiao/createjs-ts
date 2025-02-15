@@ -5975,8 +5975,6 @@ declare namespace createjs {
      */
     class HTMLAudioPlugin extends AbstractPlugin
     {
-        constructor();
-
         // properties
         /**
          * 最大实例数，此限制主要限于IE9。实际数量因浏览器而异（很大程度上取决于硬件），但这是一个安全的估计。音频精灵可以绕过此限制。
@@ -5991,28 +5989,136 @@ declare namespace createjs {
          */
         static isSupported(): boolean;
     }
-
+    /**
+     * HTMLAudioSoundInstance 扩展了 {@link AbstractSoundInstance} 的基础 API，由 {@link HTMLAudioPlugin} 使用。
+     */
     class HTMLAudioSoundInstance extends AbstractSoundInstance
     {
+        /**
+         * 
+         * @param src 声音文件的路径和文件名
+         * @param startTime 音频精灵属性，用于设置偏移量（毫秒）
+         * @param duration 音频精灵属性，用于设置片段播放时长（毫秒）
+         * @param playbackResource 插件支持音频播放所需的任何资源
+         */
         constructor(src: string, startTime: number, duration: number, playbackResource: Object);
     }
-
+    /**
+     * HTMLAudioTagPool 是 HTML5AudioElement 实例的池。
+     */
     class HTMLAudioTagPool
     {
-
+        // methods
+        /**
+         * 获取具有给定源的音频标签。
+         * @param src 音频标签使用的源文件。
+         */
+        static get(src: string): void;
+        /**
+         * 获取 src 音频的时长（毫秒）。
+         * @param src 音频标签使用的源文件。
+         * @returns src 的时长（毫秒）
+         */
+        static getDuration(src: string): number;
+        /**
+         * 删除存储的标签引用并将其返回池中。注意，如果标签引用不存在，这将失败。
+         * @param src 标签的源文件。
+         * @returns 如果 TagPool 被删除。
+         */
+        static remove(src: string): boolean;
+        /**
+         * 将音频标签返回池中。
+         * @param src 音频标签使用的源文件。
+         * @param tag 音频标签。
+         */
+        static set(src:string,tag:HTMLElement):void;
     }
-
+    /**
+     * 从0.6.1版本开始可用
+     * 
+     * 一个存储传递给 play 和 play 调用的可选播放属性的类。
+     * 
+     * 可选播放属性包括：
+     * 
+     * interrupt - 如何中断任何当前正在播放的音频实例，如果声音的最大实例数已经达到。
+     * 值定义为Sound类中的INTERRUPT_TYPE常量，默认由defaultInterruptBehavior定义。
+     * delay - 音频播放开始延迟的时间，以毫秒为单位。
+     * offset - 从音频开始播放的偏移量，以毫秒为单位。
+     * loop - 音频在到达播放结束时循环的次数。默认值为0（不循环），-1可以用于无限循环。
+     * volume - 音频的音量，介于0和1之间。注意，主音量应用于单个音量。
+     * pan - 音频的左右声道，介于-1（左）和1（右）之间。
+     * startTime - 要创建音频精灵（带有duration），开始播放和循环的初始偏移量，以毫秒为单位。
+     * duration - 要创建音频精灵（带有startTime），播放片段的时间，以毫秒为单位。
+     * 
+     * #### 示例
+     * ```js
+     * var props = new createjs.PlayPropsConfig().set({interrupt: createjs.Sound.INTERRUPT_ANY, loop: -1, volume: 0.5})
+     * createjs.Sound.play("mySound", props);
+     * // OR
+     * mySoundInstance.play(props);
+     * ```
+     */
     class PlayPropsConfig
     {
+        // properties
+        /**
+         * 延迟播放开始的时间，以毫秒为单位。
+         * @default null
+         */
         delay:number;
+        /**
+         * 用于创建音频精灵（带有startTime），片段播放时长，以毫秒为单位。
+         * @default null
+         */
         duration:number;
+        /**
+         * 如何中断任何正在播放的音频实例，
+         * 如果声音的最大实例数已经达到。
+         * 值定义为Sound类中的INTERRUPT_TYPE常量，默认由defaultInterruptBehavior定义。
+         * @default null
+         */
         interrupt:string;
+        /**
+         * 音频在到达播放结束时循环的次数。默认值为0（不循环），-1可以用于无限循环。
+         * @default null
+         */
         loop:number;
+        /**
+         * 从音频开始播放的偏移量，以毫秒为单位。
+         * @default null
+         */
         offset:number;
+        /**
+         * 音频的左右声道，介于-1（左）和1（右）之间。
+         * @default null
+         */
         pan:number;
+        /**
+         * 用于创建音频精灵（带有duration），开始播放和循环的初始偏移量，以毫秒为单位。
+         * @default null
+         */
         startTime:number;
+        /**
+         * 声音音量，取值范围0到1。注意总音量会作用于单个音量之上（总音量与单个音量相乘）。
+         * @default null
+         */
         volume:number;
+        /**
+         * 从另一个PlayPropsConfig或Object创建一个PlayPropsConfig实例。
+         * @param value 播放属性
+         * @returns 返回PlayPropsConfig实例
+         */
         static create( value:PlayPropsConfig|any ): PlayPropsConfig;
+        /**
+         * 提供一个链式快捷方法，用于设置实例上的多个属性。
+         * 
+         * #### 示例
+         * ```js
+         * var PlayPropsConfig = new createjs.PlayPropsConfig().set({loop:-1, volume:0.7});
+         * ```
+         * @param props 一个包含播放属性的对象
+         * @returns 返回实例引用，用于链式调用
+         */
         set ( props:any ): PlayPropsConfig;
     }
 
