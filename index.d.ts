@@ -6121,51 +6121,588 @@ declare namespace createjs {
          */
         set ( props:any ): PlayPropsConfig;
     }
-
+    /**
+     * Sound类是用于创建声音、控制整体音量级别以及管理插件的公共API。
+     * 该类的所有Sound API都是静态方法。
+     * 
+     * #### 注册和预加载
+     * 在播放声音之前，必须先注册它。您可以使用{@link registerSound}或使用{@link registerSounds}注册多个声音。
+     * 如果您不先注册声音，请在尝试使用{@link play}或{@link createInstance}播放它之前，声音源将自动注册，但播放将失败，因为源将不会准备好。
+     * 如果您使用PreloadJS，注册将在声音预加载时自动处理。建议您内部使用register函数或外部使用{@link PreloadJS}预加载声音，以便在需要时它们已经准备好。
+     * 
+     * #### 播放
+     * 一旦声音注册和预加载，使用play方法播放声音。
+     * 此方法返回一个{@link AbstractSoundInstance}，可以暂停、恢复、静音等。
+     * 请参阅{@link AbstractSoundInstance}文档了解更多实例控制API。
+     * 
+     * #### 插件
+     * 默认情况下，使用{@link WebAudioPlugin}或{@link HTMLAudioPlugin}（当可用时），尽管开发人员可以更改插件优先级或添加新插件（如提供的{@link FlashAudioPlugin}）。
+     * 请参阅{@link Sound} API方法了解更多播放和插件API。要安装插件或指定不同的插件顺序，请参见Sound/installPlugins。
+     * 
+     * #### 示例
+     * ```js
+     * createjs.FlashAudioPlugin.swfPath = "../src/soundjs/flashaudio";
+     * createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.FlashAudioPlugin]);
+     * createjs.Sound.alternateExtensions = ["mp3"];
+     * createjs.Sound.on("fileload", this.loadHandler, this);
+     * createjs.Sound.registerSound("path/to/mySound.ogg", "sound");
+     * function loadHandler(event) {
+     *     // This is fired for each sound that is registered.
+     *     var instance = createjs.Sound.play("sound");  // play using id.  Could also use full source path or event.src.
+     *     instance.on("complete", this.handleComplete, this);
+     *     instance.volume = 0.5;
+     * }
+     * ```
+     * 
+     * 可以在{@link registerSound}的"data"参数中指定同一声音的并发播放实例的最大数量。
+     * 注意，如果未指定，活动插件将应用默认限制。
+     * 目前，{@link HTMLAudioPlugin}设置默认限制为2，{@link WebAudioPlugin}和{@link FlashAudioPlugin}设置默认限制为100。
+     * ```js
+     * createjs.Sound.registerSound("sound.mp3", "soundId", 4);
+     * ```
+     * 
+     * 声音可以与PreloadJS一起用作插件，以帮助正确预加载音频。
+     * 使用PreloadJS预加载的音频会自动注册到Sound类中。
+     * 当音频未预加载时，Sound将自动进行内部加载。
+     * 因此，如果音频未完成加载，第一次播放时可能会失败。
+     * 使用{@link fileload}事件确定音频何时完成内部预加载。建议在播放之前预加载所有音频。
+     * 
+     * #### 示例
+     * ```js
+     * var queue = new createjs.LoadQueue();
+     * queue.installPlugin(createjs.Sound);
+     * ```
+     * 
+     * #### 音频精灵
+     * 
+     * SoundJS has added support for AudioSprite, available as of version 0.6.0. For those unfamiliar with audio sprites,
+     * they are much like CSS sprites or sprite sheets: multiple audio assets grouped into a single file.
+     * 
+     * #### 示例
+     * ```js
+     * var assetsPath = "./assets/";
+     * var sounds = [{
+     *     src:"MyAudioSprite.ogg", data: {
+     *         audioSprite: [
+     *             {id:"sound1", startTime:0, duration:500},
+     *             {id:"sound2", startTime:1000, duration:400},
+     *             {id:"sound3", startTime:1700, duration: 1000}
+     *         ]}
+     *     }
+     * ];
+     * createjs.Sound.alternateExtensions = ["mp3"];
+     * createjs.Sound.on("fileload", loadSound);
+     * createjs.Sound.registerSounds(sounds, assetsPath);
+     * // after load is complete
+     * createjs.Sound.play("sound2");
+     * ```
+     * 
+     * #### 移动播放
+     * 
+     * 运行iOS系统的设备需要通过用户主动触发的事件（如触摸/点击）播放至少一个声音来"解锁"WebAudio上下文。
+     * SoundJS的早期版本包含"MobileSafe"示例，但从SoundJS 0.6.2版本开始不再需要。
+     * 
+     * - 在SoundJS 0.4.1及以上版本中，您可以初始化插件或使用{@link playEmptySound}方法在用户输入事件的调用栈中手动解锁音频上下文。
+     * 
+     * - 在SoundJS 0.6.2及以上版本中，SoundJS会自动监听第一个文档级别的"mousedown"和"touchend"事件，
+     * 并解锁WebAudio。这将一直检查这些事件，直到WebAudio上下文变为"解锁"状态（从"挂起"变为"运行"）。
+     * 
+     * - 在iOS9及以上版本中，"mousedown"和"touchend"事件都可以用于解锁音频，
+     * "touchstart"事件在iOS8及以下版本中有效，但"touchend"事件仅在iOS9中当手势被解释为"点击"时有效，
+     * 如果用户长按按钮，它将不再有效。
+     * 
+     * - 当使用EaselJS的{@link Touch}类时，点击画布不会触发"mousedown"事件，
+     * 因为MouseEvents被阻止了，以确保只有触摸事件会触发。要解决这个问题，您可以依赖"touchend"事件，或者：
+     * 
+     *  1.将Touch类构造函数中的`allowDefault`属性设置为`true`（默认为`false`）。
+     *  2.将EaselJS `Stage`上的`preventSelection`属性设置为`false`。
+     * 
+     * 这些设置可能会改变应用程序的行为，因此不建议使用。
+     * 
+     * #### 加载备用路径和扩展名-less文件
+     * 
+     * SoundJS支持通过传递一个对象而不是字符串来加载备用路径和扩展名-less文件，
+     * 该对象使用格式{extension:"path", extension2:"path2"}。
+     * 这些标签是SoundJS确定浏览器是否支持声音的方式。
+     * 这也使得多个格式可以生活在不同的文件夹中，或者在CDN上，
+     * 这些文件通常具有完全不同的文件名。
+     * 
+     * 优先级由属性顺序决定（第一个属性先尝试）。
+     * 这支持内部加载和使用PreloadJS加载。
+     * 
+     * 注意：播放时必须提供id。
+     * 
+     * #### 示例
+     * ```js
+     * var sounds = {path:"./audioPath/",
+     *     manifest: [
+     *         {id: "cool", src: {mp3:"mp3/awesome.mp3", ogg:"noExtensionOggFile"}}
+     *     ]};
+     * 
+     * createjs.Sound.alternateExtensions = ["mp3"];
+     * createjs.Sound.addEventListener("fileload", handleLoad);
+     * createjs.Sound.registerSounds(sounds);
+     * ```
+     * 
+     * ### 已知浏览器和操作系统问题
+     * 
+     * #### IE 9 HTML Audio限制
+     * - 在播放开始后，对标签应用音量更改时会出现延迟。
+     * 因此，如果您已经静音了所有声音，它们将在延迟期间全部播放，直到内部应用静音。
+     * 无论何时或如何应用音量更改，由于标签似乎需要播放才能应用，因此都会发生这种情况。
+     * 
+     * - MP3编码不会总是适用于音频标签，特别是在Internet Explorer中。我们发现默认编码为64kbps。
+     * - 偶尔非常短的样本会被截断。
+     * 
+     * - 有关于如何限制一次可以加载和播放的音频标签数量的限制，这似乎是由硬件和浏览器设置决定的。请参阅HTMLAudioPlugin.MAX_INSTANCES以获得安全的估计。
+     * 
+     * #### Firefox 25 Web Audio限制
+     * 
+     * - mp3音频文件在所有Windows机器上都不能正确加载，这里报告了。
+     * 因此，建议在解决此问题之前，先传递另一个FF支持的类型（如ogg）。
+     * 
+     * #### Safari限制
+     * 
+     * Safari需要Quicktime安装才能播放音频。
+     * 
+     * #### iOS 6 Web Audio限制
+     * 
+     * - 音频最初被锁定，必须通过用户主动触发的事件解锁。请参阅上面的移动播放部分。
+     * 
+     * - 一个错误存在，当在DOM中存在具有不同sampleRate的音频的video元素时，会扭曲未缓存的web音频。
+     * 
+     * #### Android HTML Audio限制
+     * 
+     * - 我们无法控制音频音量。只有用户可以在他们的设备上设置音量。
+     * - 我们只能在用户事件（触摸/点击）内部播放音频。这目前意味着您不能循环声音或使用延迟。
+     * 
+     * #### Web Audio和PreloadJS
+     * 
+     * Web Audio必须通过XHR加载，因此当与PreloadJS一起使用时，标签加载是不可能的。这意味着标签加载不能用于避免跨域问题。
+     */
     class Sound extends EventDispatcher
     {
         // properties
+        /**
+         * 当前活动的插件。如果为null，则没有插件可以初始化。如果未指定插件，Sound尝试应用默认插件：{@link WebAudioPlugin}，然后是{@link HTMLAudioPlugin}。
+         */
         static activePlugin: Object;
+        /**
+         * 自0.5.2版本开始可用
+         * 
+         * 一个用于尝试加载声音的扩展数组，如果默认扩展不被活动插件支持。这些扩展按顺序应用，因此如果您尝试在浏览器中加载Thunder.ogg，并且您的扩展数组是["mp3", "m4a", "wav"]，它将检查mp3支持，然后是m4a，然后是wav。音频文件需要位于同一位置，因为仅更改扩展名。
+         * 
+         * 注意，无论加载哪个文件，您都可以使用相同的id或传递给加载的相同源路径调用createInstance和play。
+         * 
+         * #### 示例
+         * ```js
+         * var sounds = [
+         *     {src:"myPath/mySound.ogg", id:"example"},
+         * ];
+         * createjs.Sound.alternateExtensions = ["mp3"]; // 现在如果ogg格式不被支持，SoundJS将尝试加载asset0.mp3
+         * createjs.Sound.on("fileload", handleLoad); // 当每个声音加载时调用handleLoad
+         * createjs.Sound.registerSounds(sounds, assetPath);
+         * // ...
+         * createjs.Sound.play("myPath/mySound.ogg"); // 无论支持哪种格式，都可以工作。注意使用ID调用是更好的方法
+         * ```
+         */
         static alternateExtensions: any[];
+        /**
+         * 自0.4.0版本开始可用
+         * 
+         * 确定在达到声音的最大实例数时，默认行为是否中断其他正在播放的实例。
+         * 目前默认值为INTERRUPT_NONE，但可以设置并相应地更改播放行为。这只在调用play时没有传递值时使用。
+         * 
+         * @default Sound.INTERRUPT_NONE 或 "none"
+         */
         static defaultInterruptBehavior: string;
+        /**
+         * 自0.4.0版本开始可用
+         * 
+         * 一些扩展使用另一种类型来播放（其中之一是codex）。这允许您将该支持映射到插件，以便插件可以准确地确定是否支持扩展。
+         * 添加到此列表可以帮助插件更准确地确定是否支持扩展。
+         * 
+         * 每个格式的扩展列表可以在这个页面找到：http://html5doctor.com/html5-audio-the-state-of-play/。
+         * 
+         * @default {m4a:"mp4"}
+         */
         static EXTENSION_MAP: Object;
+        /**
+         * 中断任何正在播放的实例，如果声音的最大实例数已经播放。
+         * @default "any"
+         */
         static INTERRUPT_ANY: string;
+        /**
+         * 当该声音的实例已达到最大播放数量时，用于中断同源音频中播放进度最少的当前最早播放实例的中断值。
+         * @default "early"
+         */
         static INTERRUPT_EARLY: string;
+        /**
+         * 当该声音的实例已达到最大播放数量时，用于中断同源音频中播放进度最多的当前最早播放实例的中断值。
+         * @default "late"
+         */
         static INTERRUPT_LATE: string;
+        /**
+         * 当该声音的实例已达到最大播放数量时，用于不中断任何正在播放的实例的中断值。
+         * @default "none"
+         */
         static INTERRUPT_NONE: string;
+        /**
+         * 定义一个实例的playState，该实例无法播放。通常是由于在"INTERRUPT_NONE"中断模式下缺乏可用通道，播放停滞，或者声音无法找到。
+         * @default "playFailed"
+         */
         static PLAY_FAILED: string;
+        /**
+         * 定义已完成播放的实例的playState状态。
+         * @default "playFinished"
+         */
         static PLAY_FINISHED: string;
+        /**
+         * 定义仍处于初始化阶段的实例的playState状态。
+         * @default "playInited"
+         */
         static PLAY_INITED: string;
+        /**
+         * 定义被其他实例中断的实例的playState状态。
+         * @default "playInterrupted"
+         */
         static PLAY_INTERRUPTED: string;
+        /**
+         * 定义当前正在播放或已暂停的实例的playState状态。
+         * @default "playSucceeded"
+         */
         static PLAY_SUCCEEDED: string;
+        /**
+         * 自0.4.0版本开始可用
+         * 
+         * Sound将尝试播放的默认支持扩展列表。插件将检查浏览器是否可以播放这些类型，因此修改此列表之前插件初始化将允许插件尝试支持其他媒体类型。
+         * 
+         * 注意：此列表不适用于{@link FlashAudioPlugin}。
+         * 
+         * 更多关于文件格式的信息可以在这里找到：http://en.wikipedia.org/wiki/Audio_file_format。
+         * 一个非常详细的文件格式列表可以在这里找到：http://www.fileinfo.com/filetypes/audio。
+         * 
+         * @default ["mp3", "ogg", "opus", "mpeg", "wav", "m4a", "mp4", "aiff", "wma", "mid"]
+         */
         static SUPPORTED_EXTENSIONS: string[];
+        /**
+         * 自0.6.1版本开始可用
+         * 
+         * 静音/取消静音所有音频。注意，静音的音频仍然会以0音量播放。这个全局静音值是单独维护的，当设置时会覆盖，但不会改变单个实例的静音属性。
+         * 要静音单个实例，请使用AbstractSoundInstance {@link muted}代替。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.Sound.muted = true;
+         * ```
+         * @default false
+         */
         static muted: boolean;
+        /**
+         * 自0.6.1版本开始可用
+         * 
+         * 设置Sound的音量。主音量乘以每个声音的单独音量。例如，如果主音量是0.5，一个声音的音量是0.5，那么结果音量是0.25。要设置单个声音的音量，请使用AbstractSoundInstance {@link volume}代替。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.Sound.volume = 0.5;
+         * ```
+         * 
+         * @default 1
+         */
         static volume: number;
+        /**
+         * 自0.6.1版本开始可用
+         * 
+         * 获取活动插件的能力，这些能力有助于确定插件是否可以在当前环境中使用，或者插件是否支持特定功能。能力包括：
+         * 
+         * - panning: 如果插件可以左右平移音频。
+         * - volume: 如果插件可以控制音频音量。
+         * - tracks: 可以同时播放的音频轨道的最大数量。如果没有已知的限制，这将返回-1。
+         * 
+         * 每个在SUPPORTED_EXTENSIONS中的文件类型：
+         * - mp3: 如果MP3音频被支持。
+         * - ogg: 如果OGG音频被支持。
+         * - wav: 如果WAV音频被支持。
+         * - mpeg: 如果MPEG音频被支持。
+         * - m4a: 如果M4A音频被支持。
+         * - mp4: 如果MP4音频被支持。
+         * - aiff: 如果aiff音频被支持。
+         * - wma: 如果wma音频被支持。
+         * - mid: 如果mid音频被支持。
+         * 
+         * 您可以使用标准对象表示法获取活动插件的特定能力。
+         * 
+         * #### 示例
+         * ```js
+         * var mp3 = createjs.Sound.capabilities.mp3;
+         * ```
+         * 
+         * 注意：此属性是只读的。
+         */
         static capabilities: any;
 
         // methods
-        static createInstance(src: string): AbstractSoundInstance;
+        /**
+         * 使用传递的src创建一个AbstractSoundInstance。
+         * 如果src没有支持的扩展名或没有可用的插件，将返回一个默认的AbstractSoundInstance，可以安全地调用，但不会执行任何操作。
+         * 
+         * #### 示例
+         * ```js
+         * var myInstance = null;
+         * createjs.Sound.on("fileload", handleLoad);
+         * createjs.Sound.registerSound("myAudioPath/mySound.mp3", "myID", 3);
+         * function handleLoad(event) {
+         *     myInstance = createjs.Sound.createInstance("myID");
+         *     // 或者我们可以调用以下内容
+         *     myInstance = createjs.Sound.createInstance("myAudioPath/mySound.mp3");
+         * }
+         * ```
+         * 
+         * 注意：要创建一个未注册的音频精灵，需要同时设置startTime和duration。
+         * 这是在创建新的音频精灵时，而不是使用已经注册的音频精灵的id时。
+         * 
+         * @param src 音频的src或ID。
+         * @param startTime 要创建音频精灵（带有duration），开始播放和循环的初始偏移量，以毫秒为单位。
+         * @param duration 要创建音频精灵（带有startTime），播放片段的时间，以毫秒为单位。
+         * @returns 返回一个可以控制AbstractSoundInstance实例。不支持的扩展将返回默认的AbstractSoundInstance。
+         */
+        static createInstance(src: string, startTime?: number, duration?: number): AbstractSoundInstance;
+        /**
+         * 使用capabilities属性代替。
+         */
         static getCapabilities(): Object;
-        static getCapability(key: string): number | boolean;
-        static getMute(): boolean;
-        static getVolume(): number;
+        /**
+         * 从0.6.1版本开始可用
+         * 
+         * 获取传递的src或ID的默认播放属性。这些属性应用于所有新的SoundInstances。如果默认不存在，则返回null。
+         * @param src 用于注册音频的src或ID。
+         * @returns 返回一个PlayPropsConfig实例或null（如果不存在）。
+         */
+        getDefaultPlayProps(src: string): PlayPropsConfig;
+        /**
+         * 使用muted属性代替。
+         * @returns 
+         */
+        getMute(): boolean;
+        /**
+         * 从0.4.0版本开始可用
+         * 
+         * 初始化默认插件。当任何音频被播放或注册之前，用户手动注册插件之前，自动调用此方法，并启用Sound在没有手动插件设置的情况下工作。
+         * 目前，默认插件是WebAudioPlugin followed by HTMLAudioPlugin。
+         * 
+         * #### 示例
+         * ```js
+         * if (!createjs.initializeDefaultPlugins()) { return; }
+         * ```
+         * @returns 如果插件被初始化，返回true，否则返回false。
+         */
         static initializeDefaultPlugins(): boolean;
+        /**
+         * 确定Sound是否已经初始化，并且插件是否已激活。
+         * 
+         * #### 示例
+         * ```js
+         * if (!createjs.Sound.isReady()) {
+         *     createjs.FlashAudioPlugin.swfPath = "../src/soundjs/flashaudio/";
+         *     createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashAudioPlugin]);
+         * }
+         * ```
+         * @returns 如果Sound已初始化，并且插件已激活，返回true，否则返回false。
+         */
         static isReady(): boolean;
+        /**
+         * 从0.4.0版本开始可用
+         * 
+         * 检查内部预加载器是否已加载src。这是必要的，以确保在播放之前没有完成预加载的声音不会触发新的内部预加载。
+         * 
+         * #### 示例
+         * ```js
+         * var mySound = "assetPath/asset0.ogg";
+         * if(createjs.Sound.loadComplete(mySound)) {
+         *     createjs.Sound.play(mySound);
+         * }
+         * ```
+         * @param src 正在加载的src或id。
+         * @returns 如果src已加载，返回true，否则返回false。
+         */
         static loadComplete(src: string): boolean;
-        static play(src: string, interrupt?: any, delay?: number, offset?: number, loop?: number, volume?: number, pan?: number): AbstractSoundInstance;
+        /**
+         * 播放一个声音并获取一个AbstractSoundInstance来控制。如果声音无法播放，仍然会返回一个AbstractSoundInstance，并且有一个PLAY_FAILED的playState。
+         * 注意，即使声音播放失败，您仍然可以调用play方法，因为失败可能是由于缺乏可用的通道。
+         * 如果src没有支持的扩展名或没有可用的插件，仍然会返回一个默认的AbstractSoundInstance，不会播放任何音频，但不会生成错误。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.Sound.on("fileload", handleLoad);
+         * createjs.Sound.registerSound("myAudioPath/mySound.mp3", "myID", 3);
+         * function handleLoad(event) {
+         *     createjs.Sound.play("myID");
+         *     // store off AbstractSoundInstance for controlling
+         *     var myInstance = createjs.Sound.play("myID", {interrupt: createjs.Sound.INTERRUPT_ANY, loop:-1});
+         * }
+         * ```
+         * 
+         * 注意：要创建一个没有注册的音频精灵，需要同时设置startTime和duration。
+         * 这是在创建新的音频精灵时，而不是使用已经注册的音频精灵的id时。
+         * 
+         * @param src 音频的src或ID。
+         * @param props PlayPropsConfig实例，或包含声音播放参数的对象。详情请参见PlayPropsConfig。
+         * @returns 可在创建后进行控制的AbstractSoundInstance实例。
+         */
+        static play(src: string, props:PlayPropsConfig|any): AbstractSoundInstance;
+        /**
+         * 
+         */
         static registerManifest(manifest: Object[], basePath: string): Object;
+        /**
+         * 注册一个列表的Sound插件，按优先级顺序。要注册一个插件，在数组中传递一个元素。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.FlashAudioPlugin.swfPath = "../src/soundjs/flashaudio/";
+         * createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashAudioPlugin]);
+         * ```
+         * 
+         * @param plugins 要安装的插件类数组。
+         * @returns 是否成功初始化插件。
+         */
         static registerPlugins(plugins: any[]): boolean;
-        static registerSound(src: string | Object, id?: string, data?: number | Object, basePath?: string): Object;
+        /**
+         * 从0.4.0版本开始可用
+
+         * 注册一个音频文件以在Sound中加载和将来播放。
+         * 使用PreloadJS时自动调用。建议注册所有需要播放的声音，以便正确准备和预加载它们。Sound在需要时进行内部预加载。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.Sound.alternateExtensions = ["mp3"];
+         * createjs.Sound.on("fileload", handleLoad); // add an event listener for when load is completed
+         * createjs.Sound.registerSound("myAudioPath/mySound.ogg", "myID", 3);
+         * createjs.Sound.registerSound({ogg:"path1/mySound.ogg", mp3:"path2/mySoundNoExtension"}, "myID", 3);
+         * ```
+         * 
+         * @param src 音频的src或包含"src"属性的对象或包含多个扩展标记src属性的对象。
+         * @param id 用户指定的ID，用于稍后播放声音。注意，当src是多个扩展标记src属性时，id是必需的。
+         * @param data 与项目关联的数据。Sound使用data参数作为音频实例的声道数，
+         * 但如果data对象用于其他信息时，可以附加一个"channels"属性。
+         * 如果未找到值，音频通道将根据插件设置默认值。
+         * Sound还使用data属性来存储符合以下格式的{@link AudioSprite}对象数组 {id, startTime, duration}。
+         * id用于后续播放声音，其方式与带有id的声音源相同。
+         * startTime是开始播放和循环的初始偏移量（以毫秒为单位）。
+         * duration是音频片段的播放时长（以毫秒为单位）。
+         * 这使得Sound能够支持通过id播放的音频精灵。
+         * @param basePath 设置一个路径，用于加载src。
+         * @param defaultPlayProps 可选的播放属性，将设置为任何新的AbstractSoundInstance的默认值。详情请参见PlayPropsConfig。
+         * @returns 返回一个包含修改值的对象，定义了声音。如果源无法解析或无法初始化插件，返回false。如果源已加载，返回true。
+         */
+        static registerSound(src: string | Object, id?: string, data?: number | Object, basePath?: string,defaultPlayProps?:PlayPropsConfig): Object;
+        /**
+         * 从0.6.0版本开始可用
+         * 
+         * 注册一个音频文件列表以在Sound中加载和将来播放。建议注册所有需要播放的声音，以便正确准备和预加载它们。Sound在需要时进行内部预加载。
+         * 
+         * #### 示例
+         * ```js
+         * var assetPath = "./myAudioPath/";
+         * var sounds = [
+         *     {src:"asset0.ogg", id:"example"},
+         *     {src:"asset1.ogg", id:"1", data:6},
+         *     {src:"asset2.mp3", id:"works"}
+         *     {src:{mp3:"path1/asset3.mp3", ogg:"path2/asset3NoExtension"}, id:"better"}
+         * ];
+         * createjs.Sound.alternateExtensions = ["mp3"];    // if the passed extension is not supported, try this extension
+         * createjs.Sound.on("fileload", handleLoad); // call handleLoad when each sound loads
+         * createjs.Sound.registerSounds(sounds, assetPath);
+         * ```
+         * 
+         * @param sounds 一个包含src和id属性的对象数组，或者一个包含src和id属性的对象，以及可选的data和basePath属性。
+         * @param basePath 设置一个路径，用于加载src。当创建、播放或删除通过src加载的音频时，必须包含basePath。
+         * @returns 返回一个包含修改值的对象数组，这些值定义了每个声音。像registerSound一样，当源无法解析或无法初始化插件时，返回false。当源已加载时，返回true。
+         */
         static registerSounds(sounds: Object[], basePath?: string): Object[];
+        /**
+         * 从0.4.1版本开始可用
+         * 
+         * 删除所有通过{@link registerSound}或{@link registerSounds}注册的声音。
+         * 注意，这将停止所有活动的声音实例的播放，然后删除它们。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.Sound.removeAllSounds();
+         * ```
+         */
         static removeAllSounds(): void;
+        /**
+         * 
+         */
         static removeManifest(manifest: any[], basePath: string): Object;
+        /**
+         * 从0.4.1版本开始可用
+         * 
+         * 删除通过{@link registerSound}或{@link registerSounds}注册的声音。
+         * 注意，这将停止所有活动的声音实例的播放，然后删除它们。
+         * 注意，如果传递了basePath，您需要在这里传递它或预先添加它到src。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.Sound.removeSound("myID");
+         * createjs.Sound.removeSound("myAudioBasePath/mySound.ogg");
+         * createjs.Sound.removeSound("myPath/myOtherSound.mp3", "myBasePath/");
+         * createjs.Sound.removeSound({mp3:"musicNoExtension", ogg:"music.ogg"}, "myBasePath/");
+         * ```
+         * 
+         * @param src 音频的src或ID，或包含"src"属性的对象，或包含多个扩展标记src属性的对象。
+         * @param basePath 设置一个路径，用于加载src。当创建、播放或删除通过src加载的音频时，必须包含basePath。
+         * @returns 如果声音被删除，返回true，否则返回false。
+         */
         static removeSound(src: string | Object, basePath: string): boolean;
-        static setMute(value: boolean): boolean;
-        static setVolume(value: number): void;
+        /**
+         * 从0.4.1版本开始可用
+         * 
+         * 删除通过{@link registerSound}或{@link registerSounds}注册的音频文件列表。
+         * 注意，这将停止所有活动的声音实例的播放，然后删除它们。
+         * 注意，如果传递了basePath，您需要在这里传递它或预先添加它到src。
+         * 
+         * #### 示例
+         * ```js
+         * var assetPath = "./myPath/";
+         * var sounds = [
+         *     {src:"asset0.ogg", id:"example"},
+         *     {src:"asset1.ogg", id:"1", data:6},
+         *     {src:"asset2.mp3", id:"works"}
+         * ];
+         * createjs.Sound.removeSounds(sounds, assetPath);
+         * ```
+         * 
+         * @param sounds 要删除的对象数组。
+         * 对象的格式需要为removeSound: {srcOrID:srcURIorID}。
+         * 您也可以传递一个包含path和manifest属性的对象，其中path是一个basePath，manifest是一个要删除的对象数组。
+         * @param basePath 设置一个路径，用于加载src。当创建、播放或删除通过src加载的音频时，必须包含basePath。
+         * @returns Set a path that will be prepended to each src when removing.
+         */
+        static removeSounds(sounds: Object[], basePath: string): any[];
+        /**
+         * 从0.6.1版本开始可用
+         * 
+         * 设置传递的src或ID的默认播放属性。请参见{@link PlayPropsConfig}以获取可用属性。
+         * 
+         * @param src 用于注册音频的src或ID。
+         * @param playProps 您想要设置的播放属性。
+         */
+        setDefaultPlayProps(src:string, playProps:any|PlayPropsConfig):void;
+        /**
+         * 停止所有音频（全局停止）。被停止的音频会被重置而非暂停。若要播放已停止的音频，请调用AbstractSoundInstance的play方法。
+         * 
+         * #### 示例
+         * ```js
+         * createjs.Sound.stop();
+         * ```
+         */
         static stop(): void;
 
         // EventDispatcher mixins
-        static addEventListener(type: string, listener: (eventObj: Object) => boolean, useCapture?: boolean): Function;
+        /*static addEventListener(type: string, listener: (eventObj: Object) => boolean, useCapture?: boolean): Function;
         static addEventListener(type: string, listener: (eventObj: Object) => void, useCapture?: boolean): Function;
         static addEventListener(type: string, listener: { handleEvent: (eventObj: Object) => boolean; }, useCapture?: boolean): Object;
         static addEventListener(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): Object;
@@ -6187,7 +6724,7 @@ declare namespace createjs {
         static removeEventListener(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): void;
         static removeEventListener(type: string, listener: Function, useCapture?: boolean): void; // It is necessary for "arguments.callee"
         static toString(): string;
-        static willTrigger(type: string): boolean;
+        static willTrigger(type: string): boolean;*/
     }
 
     class SoundJS {
