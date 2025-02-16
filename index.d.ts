@@ -6726,41 +6726,161 @@ declare namespace createjs {
         static toString(): string;
         static willTrigger(type: string): boolean;*/
     }
-
+    /**
+     * 静态类，保存库特定信息，如库的版本和buildDate。SoundJS类已重命名为Sound。请参见Sound以获取有关使用声音的信息。
+     */
     class SoundJS {
+        /**
+         * 此版本的构建日期，以UTC格式表示。
+         */
         static buildDate: string;
+        /**
+         * 此版本的版本字符串。
+         */
         static version: string;
     }
-
+    /**
+     * Loader 提供了通过 PreloadJS 或内部机制预加载 Web Audio 内容的机制。
+     * 实例会被返回给预加载器，当需要请求资源时会调用 load 方法。
+     */
     class WebAudioLoader
     {
+        /**
+         * 解码音频所需的Web音频上下文
+         */
         static context: AudioContext;
     }
-
+    /**
+     * 自0.4.0版本开始可用
+     * 
+     * 使用Web Audio在浏览器中播放声音。WebAudioPlugin是当前的默认插件，并且将在任何支持的地方使用。
+     * 要更改插件优先级，请查看Sound API的{@link registerPlugins}方法。
+     * 
+     * ### 已知浏览器和操作系统问题
+     * 
+     * #### Firefox 25
+     * - 在所有Windows系统机器上，MP3音频文件无法正确加载，已在此处报告。
+     * 因此，建议在解决此问题之前，传递另一个FireFox支持的类型（例如ogg）作为默认扩展名。
+     * 
+     * #### Webkit (Chrome 和 Safari)
+     * - AudioNode.disconnect 方法似乎并不总是有效。如果播放大量音频文件，这会导致文件体积随着时间推移不断增长。
+     * 
+     * #### iOS 6限制
+     * - 声音最初是静音的，并且只有在用户发起的事件（触摸/点击）内部调用play时才会取消静音。
+     * 请阅读{@link Sound}类中的移动播放说明，以了解限制的完整概述，以及如何解决这些问题。
+     * - 存在一个bug，当视频元素存在于DOM中时，未缓存的音频会被扭曲。您可以通过确保音频和视频音频共享相同的采样率来避免此问题。
+     * 
+     */
     class WebAudioPlugin extends AbstractPlugin
     {
-        constructor();
-
         // properties
+        /**
+         * Web Audio上下文，WebAudio使用它来播放音频。所有与WebAudioPlugin交互的音频节点都需要在此上下文中创建。
+         * 
+         * 高级用户可以将其设置为现有上下文，但必须在调用{@link registerPlugins}或{@link initializeDefaultPlugins}之前这样做。
+         */
         static context: AudioContext;
+        /**
+         * 用于播放音频的Web音频上下文。所有与WebAudioPlugin交互的节点都需要在此上下文中创建。
+         */
         context: AudioContext;
+        /**
+         * 用于检查iOS兼容性时使用的默认采样率。请参阅{@link _createAudioContext}。
+         * @default 44100
+         */
+        static DEFAULT_SAMPLE_RATE: number;
+        /**
+         * 一个DynamicsCompressorNode，用于提高声音质量并防止音频失真。它连接到context.destination。
+         * 
+         * 高级用户可以通过createjs.Sound.activePlugin.dynamicsCompressorNode访问。
+         */
         dynamicsCompressorNode: DynamicsCompressorNode;
+        /**
+         * 一个GainNode，用于控制主音量。它连接到dynamicsCompressorNode。
+         * 
+         * 高级用户可以通过createjs.Sound.activePlugin.gainNode访问。
+         */
         gainNode: GainNode;
 
         // methods
+        /**
+         * 确定插件是否可以在当前浏览器/操作系统中使用。
+         * 
+         * @returns 如果插件可以初始化，返回true，否则返回false。
+         */
         static isSupported(): boolean;
+        /**
+         * 自0.4.1版本开始可用
+         * 
+         * 在Web音频上下文中播放一个空的声音。这是用于在iOS设备上启用Web音频，因为它们要求第一个声音在用户发起的事件（触摸/点击）内部播放。
+         * 当WebAudioPlugin被初始化时（例如，通过Sound initializeDefaultPlugins），会调用此方法。
+         * 
+         * #### 示例
+         * ```js
+         * function handleTouch(event) {
+         *     createjs.WebAudioPlugin.playEmptySound();
+         * }
+         * ```
+         */
         static playEmptySound(): void;
     }
-
+    /**
+     * WebAudioSoundInstance 扩展了 AbstractSoundInstance 的基类 API，并被 WebAudioPlugin 使用。
+     * 
+     * WebAudioSoundInstance 为高级用户公开了 audioNodes 的访问接口。
+     */
     class WebAudioSoundInstance extends AbstractSoundInstance
     {
+        /**
+         * 
+         * @param src The path to and file name of the sound.
+         * @param startTime Audio sprite property used to apply an offset, in milliseconds.
+         * @param duration Audio sprite property used to set the time the clip plays for, in milliseconds.
+         * @param playbackResource Any resource needed by plugin to support audio playback.
+         */
         constructor(src: string, startTime: number, duration: number, playbackResource: Object);
 
         // properties
+        /**
+         * 注意，这个只用于高级用户。
+         * 在关闭时，将分配给源节点的buffer属性。
+         * 这个和{@link WebAudioPlugin}引用的相同。
+         */
+        static _scratchBuffer:AudioBufferSourceNode;
+        /**
+         * 自0.6.0版本开始可用
+         * 
+         * 注意，这个只用于高级用户。
+         * 用于创建节点的音频上下文。这个和{@link WebAudioPlugin}使用的相同。
+         */
         static context: AudioContext;
+        /**
+         * 自0.6.0版本开始可用
+         * 
+         * 注意，这个只用于高级用户。
+         * 来自{@link WebAudioPlugin}的音频节点，连接到context.destination。
+         */
         static destinationNode: AudioNode;
+        /**
+         * 自0.4.0版本开始可用
+         * 
+         * 注意，这个只用于高级用户。
+         * 用于控制{@link WebAudioSoundInstance}音量的GainNode。连接到destinationNode。
+         */
         gainNode: GainNode;
+        /**
+         * 自0.4.0版本开始可用
+         * 
+         * 注意，这个只用于高级用户。
+         * 一个允许左右音频通道平移的panNode。连接到{@link WebAudioSoundInstance}的gainNode。
+         */
         panNode: PannerNode;
+        /**
+         * 自0.4.0版本开始可用
+         * 
+         * 注意，这个只用于高级用户。
+         * sourceNode是音频源。连接到{@link WebAudioSoundInstance}的panNode。
+         */
         sourceNode: AudioNode;
     }
 }
