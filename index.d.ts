@@ -3684,40 +3684,219 @@ declare namespace createjs {
         clearImageTexture(image: Object): void;
         updateViewport(width: number, height: number): void;
     }
-
+    /**
+     * Stage是显示列表的根容器。每次调用tick方法时，都会将其显示列表渲染到目标画布上。
+     * 
+     * #### Example
+     * 这个例子创建了一个舞台，添加了一个子元素，然后使用Ticker来更新子元素并使用update重绘舞台。
+     * 
+     * ```js
+     * var stage = new createjs.Stage("canvasElementId");
+     * var image = new createjs.Bitmap("imagePath.png");
+     * stage.addChild(image);
+     * createjs.Ticker.addEventListener("tick", handleTick);
+     * function handleTick(event) {
+     *     image.x += 10;
+     *     stage.update();
+     * }
+     * ```
+     */
     class Stage extends Container {
+        /**
+         * 
+         * @param canvas Stage将渲染到的canvas对象，或当前文档中canvas元素的字符串id。
+         */
         constructor(canvas: HTMLCanvasElement | string | Object);
 
         // properties
+        /**
+         * 指示是否应在每次渲染之前自动清除画布。您可以将其设置为false以手动控制清除（例如，用于生成艺术，或当多个舞台指向同一个画布时）。
+         * 
+         * #### Example
+         * 
+         * ```js
+         * var stage = new createjs.Stage("canvasId");
+         * stage.autoClear = false;
+         * ```
+         * 
+         * @default true
+         */
         autoClear: boolean;
+        /**
+         * 舞台将渲染到的canvas对象。多个舞台可以共享一个canvas，但您必须为所有未被tick的舞台禁用autoClear（或它们将清除彼此的渲染）。
+         * 
+         * 当更改canvas属性时，您必须禁用旧画布上的事件，并在新画布上启用事件，否则鼠标事件将无法正常工作。例如：
+         * 
+         * ```js
+         * myStage.enableDOMEvents(false);
+         * myStage.canvas = anotherCanvas;
+         * myStage.enableDOMEvents(true);
+         * ```
+         */
         canvas: HTMLCanvasElement | Object;
+        /**
+         * 指定在调用update时影响舞台的区域。这可以用于选择性地重新绘制画布的特定区域。如果为null，则绘制整个画布区域。
+         */
         drawRect: Rectangle;
+        /**
+         * 默认事件处理程序，当收到tick事件时调用Stage update方法。这允许您直接将Stage实例注册为Ticker的事件侦听器，使用：
+         * 
+         * ```js
+         * Ticker.addEventListener("tick", myStage);
+         * ```
+         * 
+         * 注意：如果您使用此模式订阅tick，则tick事件对象将传递给显示对象tick处理程序，而不是delta和paused参数。
+         */
         handleEvent: Function;
+        /**
+         * 指示鼠标是否当前位于画布的边界内。
+         * @default false
+         */
         mouseInBounds: boolean;
+        /**
+         * 如果为true，当鼠标离开目标画布时，将继续调用鼠标移动事件。请参阅mouseInBounds，以及MouseEvent x/y/rawX/rawY。
+         * @default false
+         */
         mouseMoveOutside: boolean;
+        /**
+         * 当前鼠标在画布上的x坐标。如果鼠标离开画布，这将指示画布上最近的鼠标位置，并且mouseInBounds将设置为false。
+         */
         mouseX: number;
+        /**
+         * 当前鼠标在画布上的y坐标。如果鼠标离开画布，这将指示画布上最近的鼠标位置，并且mouseInBounds将设置为false。
+         */
         mouseY: number;
+        /**
+         * 指定一个目标舞台，在处理鼠标/触摸交互后，将鼠标/触摸交互事件传递给它。这在您有多个分层画布并且希望用户交互事件通过时非常有用。
+         * 例如，这将从topStage将鼠标事件传递给bottomStage：
+         * 
+         * ```js
+         * topStage.nextStage = bottomStage;
+         * ```
+         * 
+         * 要禁用传递，请将nextStage设置为null。
+         * 
+         * 
+         * 
+         * MouseOver, MouseOut, RollOver, and RollOut交互也通过使用最顶层舞台的鼠标悬停设置传递，但仅在目标舞台具有鼠标悬停交互时处理。使用relay目标时的注意事项：
+         * 
+         * 1.最顶层（第一个）舞台必须具有鼠标悬停交互（通过enableMouseOver）
+         * 
+         * 2.所有希望参与鼠标悬停交互的舞台必须通过enableMouseOver启用它们
+         * 
+         * 3.所有relay目标将共享最顶层舞台的频率值
+         * 
+         * 要说明这一点，在这个例子中，targetStage将在10hz（尽管传递30作为其期望的频率）处理鼠标悬停交互：
+         * ```js
+         * topStage.nextStage = targetStage;
+         * topStage.enableMouseOver(10);
+         * targetStage.enableMouseOver(30);
+         * ```
+         * 
+         * 如果targetStage的canvas完全被此舞台的canvas覆盖，您可能还想通过以下方式禁用其DOM事件：
+         * 
+         * ```js
+         * targetStage.enableDOMEvents(false);
+         * ```
+         */
         nextStage: Stage;
         /**
-         * @deprecated
+         * 如果用户点击并拖动，或双击画布，则防止选择html页面中的其他元素。通过在任何源自画布的mousedown事件（或触摸等效事件）上调用preventDefault()来实现。
+         * @default true
          */
         preventSelection: boolean;
+        /**
+         * 指示是否应将显示对象渲染为整数像素。您可以通过将DisplayObject/snapToPixel属性设置为false来启用/禁用此行为。
+         * @default false
+         */
         snapToPixelEnabled: boolean;  // deprecated
+        /**
+         * 如果为true，则在渲染到画布之前，将在舞台上的所有显示对象上调用tick回调。
+         * @default true
+         */
         tickOnUpdate: boolean;
 
         // methods
+        /**
+         * 清除目标画布。如果autoClear设置为false，则非常有用。
+         */
         clear(): void;
+        /**
+         * Stage instances cannot be cloned.
+         */
         clone(): Stage;
+        /**
+         * 启用或禁用舞台添加到DOM元素（window，document和canvas）的事件侦听器。在处理舞台实例时，禁用事件是一个很好的实践，否则舞台将继续接收页面中的事件。
+
+         * 当更改canvas属性时，您必须禁用旧画布上的事件，并在新画布上启用事件，否则鼠标事件将无法正常工作。例如：
+         * 
+         * ```js
+         * myStage.enableDOMEvents(false);
+         * myStage.canvas = anotherCanvas;
+         * myStage.enableDOMEvents(true);
+         * ```
+         */
         enableDOMEvents(enable?: boolean): void;
         /**
-         * 为舞台的显示列表启用或禁用（通过传递刷新频次数0）鼠标悬停（mouseover和mouseout）和滚动事件（rollover和rollout）。这些事件的性能消耗可能很高，因此在默认情况下会被禁用。可以通过可选的频率参数独立于鼠标移动事件来控制事件的频率。
-         * @param frequency 可选参数，指定每秒广播鼠标悬停/退出事件的最大次数。设置为0可完全禁用鼠标悬停事件。最大值为50。较低的频率响应较少，但使用较少的CPU。默认值为20。
+         * 为舞台的显示列表启用或禁用（通过传递刷新频次数0）鼠标悬停（{@link mouseover}和{@link mouseout}）和滚动事件（{@link rollover}和{@link rollout}）。
+         * 这些事件的性能消耗可能很高，因此在默认情况下会被禁用。可以通过可选的频率参数独立于鼠标移动事件来控制事件的频率。
+         * 
+         * #### Example
+         * 
+         * ```js
+         * var stage = new createjs.Stage("canvasId");
+         * stage.enableMouseOver(10); // 10 updates per second
+         * ```
+         * 
+         * @param frequency 可选参数，指定每秒广播鼠标悬停/悬停事件的最大次数。设置为0以完全禁用鼠标悬停事件。最大值为50。较低的频率响应较慢，但使用较少的CPU。
          */
         enableMouseOver(frequency?: number): void;
-        tick(props?: Object): void;
-        toDataURL(backgroundColor: string, mimeType: string): string;
-        update(...arg: any[]): void;
+        /**
+         * 通过显示列表传播一个tick事件。除非tickOnUpdate设置为false，否则此方法会自动调用update。
+         * 
+         * 如果传递了props对象到tick()，则所有属性都将被复制到传播给侦听器的对象中。
+         * 
+         * 一些EaselJS中的时间相关功能（例如Sprite/framerate）需要一个tick事件对象（或具有delta属性的等效对象）作为props参数传递给tick()。例如：
+         * 
+         * ```js
+         * Ticker.on("tick", handleTick);
+         * function handleTick(evtObj) {
+         *     // clone the event object from Ticker, and add some custom data to it:
+         *     var evt = evtObj.clone().set({greeting:"hello", name:"world"});
+         *     // pass it to stage.update():
+         *     myStage.update(evt); // subsequently calls tick() with the same param
+         * }
 
+         * // ...
+         * myDisplayObject.on("tick", handleDisplayObjectTick);
+         * function handleDisplayObjectTick(evt) {
+         *     console.log(evt.delta); // the delta property from the Ticker tick event object
+         *     console.log(evt.greeting, evt.name); // custom data: "hello world"
+         * }
+         * ```
+         * 
+         * @param props 一个包含应该复制到事件对象的属性的对象。通常是一个Ticker事件对象，或者具有delta属性的类似对象。
+         */
+        tick(props?: Object): void;
+        /**
+         * Returns a data url that contains a Base64-encoded image of the contents of the stage.
+         * The returned data url can be specified as the src value of an image element.
+         * 
+         * @param backgroundColor The background color to be used for the generated image.
+         * Any valid CSS color value is allowed. The default value is a transparent background.
+         * @param mimeType The MIME type of the image format to be create.
+         * The default is "image/png". If an unknown MIME type is passed in,
+         * or if the browser does not support the specified MIME type, the default value will be used.
+         * 
+         * @returns a Base64 encoded image.
+         */
+        toDataURL(backgroundColor?: string, mimeType?: string): string;
+        /**
+         * 每次调用update方法时，除非tickOnUpdate设置为false，否则舞台将调用{@link tick}，然后将显示列表渲染到画布上。
+         * 
+         * @param props 传递给`tick()`方法的属性对象。通常应为{@link Ticker}事件对象或包含delta属性的类似对象。
+         */
+        update(props?: Object): void;
     }
 
     interface IStageGLOptions {
@@ -3727,32 +3906,146 @@ declare namespace createjs {
         premultiply?: boolean;
         autoPurge?: number;
     }
-
+    /**
+     * StageGL实例是WebGL优化的显示列表的根级Container，用于代替普通的Stage。
+     * 这个类应该与Stage的行为相同，除了WebGL特定的功能。
+     * 
+     * 每次调用tick方法时，显示列表都会渲染到目标<canvas/>实例中，忽略非WebGL兼容的显示对象。
+     * 在支持WebGL的设备和浏览器上，内容将自动渲染到canvas 2D上下文中。
+     * 
+     * #### 限制
+     * 
+     * - {@link Shape}、{@link Shadow} 和 {@link Text} 被添加到显示列表时不会被渲染
+     * - 要显示 StageGL 无法直接渲染的内容，请使用 {@link cache} 方法缓存对象。缓存后的内容无论源内容如何都可以被渲染
+     * - 图像会被包装为 WebGL 的「纹理」。每个显卡都有同时处理的纹理数量限制，过多的纹理会显著降低性能
+     * - 每个缓存都算作独立纹理。因此推荐使用 SpriteSheet 和 SpriteSheetBuilder 来帮助保持较低的纹理数量
+     * - 要在多个 StageGL 实例之间使用图像节点（DOM Image/Canvas 元素），必须使用克隆副本，否则 GPU 纹理加载和跟踪会出现混乱
+     * - 调整画布尺寸后必须调用 updateViewport 方法，以避免缩放渲染问题。这会正确调整内存中 WebGL 上下文的尺寸
+     * - 在高性能需求场景下，手动管理纹理内存可以获得最佳性能，但默认情况下会自动处理。详见 releaseTexture 方法
+     * 
+     * #### 示例
+     * ```js
+     * var stage = new createjs.StageGL("canvasElementId");
+     * 
+     * var image = new createjs.Bitmap("imagePath.png");
+     * stage.addChild(image);
+     * 
+     * createjs.Ticker.on("tick", handleTick);
+     * 
+     * function handleTick(event) {
+     *     image.x += 10;
+     *     stage.update();
+     * }
+     * ```
+     * 
+     * 注意
+     * - StageGL 当前未包含在 EaselJS 的压缩版本中。
+     * - SpriteContainer（之前 EaselJS 中使用 WebGL 的方式）已被弃用。
+     * - 早期 EaselJS 中的 WebGL 支持（如 SpriteStage 和 SpriteContainer）对每个容器中的图像数量有严格限制，这些问题现已解决。
+     */
     class StageGL extends Stage {
+        /**
+         * 
+         * @param canvas StageGL将渲染到的canvas对象，或当前DOM中canvas元素的字符串ID
+         * @param options 包含所有选项参数的引用对象，部分选项可能不被某些浏览器支持
+         * - [preserveBuffer=false] 布尔值 可选
+         * 如果为true，WebGL不会自动清除画布（规范不建议设置为true）。这在需要保持绘制效果持久时有用
+         * 
+         * - [antialias=false] 布尔值 可选
+         * 指定浏览器的WebGL实现是否尝试执行抗锯齿。同时会在2的幂次纹理上启用线性像素采样（使图像更平滑）
+         * 
+         * - [transparent=false] 布尔值 可选
+         * 如果为true，画布将透明。这会显著增加性能开销，需谨慎使用
+         * 
+         * - [premultiply=false] 布尔值 可选
+         * 改变颜色处理方式。如果为true，假设着色器必须处理预乘alpha。这有助于避免某些资源的视觉光晕效果，但也可能导致其他资源出现问题
+         * 
+         * - [autoPurge=1200] 整数 可选
+         * 系统应自动通过purgeTextures(autoPurge)每autoPurge/2次绘制后清理未使用纹理的频率。参见purgeTextures方法获取更多信息
+         */
         constructor(canvas: HTMLCanvasElement | string | Object, options?: IStageGLOptions);
 
         // properties
+        /**
+         * 每个顶点定义的属性数量（x, y, textureU, textureV, textureIndex, alpha）
+         * @default 6
+         */
         static VERTEX_PROPERTY_COUNT: number;
+        /**
+         * 形成一个Card所需的三角形索引数量。每个三角形3个索引，2个三角形。
+         * @default 6
+         */
         static INDICIES_PER_CARD: number;
+        /**
+         * 默认情况下，我们希望在一批中处理的卡牌的最大数量。参见WEBGL_MAX_INDEX_NUM获取硬限制。
+         * @default 10000
+         */
         static DEFAULT_MAX_BATCH_SIZE: number;
+        /**
+         * WebGL允许的最大元素索引数量。使用16位无符号整数。形成一个唯一的Card需要6个索引。
+         * @default 65536
+         */
         static WEBGL_MAX_INDEX_NUM: number;
+        /**
+         * 默认U/V矩形，用于处理从图像源的完全覆盖。
+         * @default {t:0, l:0, b:1, r:1}
+         */
         static UV_RECT: number;
+        /**
+         * 用于覆盖整个渲染的Card的顶点位置。主要用于渲染目标。
+         */
         static COVER_VERT: Float32Array;
+        /**
+         * {@link COVER_VERT}的U/V。
+         */
         static COVER_UV: Float32Array;
+        /**
+         * StageGL中COVER_VERT属性的翻转U/V坐标。
+         */
         static COVER_UV_FLIP: Float32Array;
+        /**
+         * 包含在顶点和片段着色器中的"varying"属性。regular着色器设计为渲染所有预期的对象。着色器代码可能包含在预编译时替换的模板。
+         */
         static REGULAR_VARYING_HEADER: string;
+        /**
+         * 顶点着色器的完整头文件。包括varying头文件。regular着色器设计为渲染所有预期的对象。着色器代码可能包含在预编译时替换的模板。
+         */
         static REGULAR_VERTEX_HEADER: string;
+        /**
+         * 片段着色器的完整头文件。包括varying头文件。regular着色器设计为渲染所有预期的对象。着色器代码可能包含在预编译时替换的模板。
+         */
         static REGULAR_FRAGMENT_HEADER: string;
+        /**
+         * 顶点着色器的主体部分。常规着色器设计用于渲染所有预期的对象。着色器代码可能包含在预编译时被替换的模板。
+         */
         static REGULAR_VERTEX_BODY: string;
+        /**
+         * 片段着色器的正文。regular着色器设计为渲染所有预期的对象。着色器代码可能包含在预编译时替换的模板。
+         */
         static REGULAR_FRAGMENT_BODY: string;
         static REGULAR_FRAG_COLOR_NORMAL: string;
         static REGULAR_FRAG_COLOR_PREMULTIPLY: string;
         static PARTICLE_VERTEX_BODY: string;
         static PARTICLE_FRAGMENT_BODY: string;
+        /**
+         * 包含在顶点和片段着色器中的"varying"属性。cover着色器设计为简单的顶点/uv仅纹理渲染，覆盖渲染表面。着色器代码可能包含在预编译时替换的模板。
+         */
         static COVER_VARYING_HEADER: string;
+        /**
+         * 顶点着色器的完整头文件。包括varying头文件。cover着色器设计为简单的顶点/uv仅纹理渲染，覆盖渲染表面。着色器代码可能包含在预编译时替换的模板。
+         */
         static COVER_VERTEX_HEADER: string;
+        /**
+         * 片段着色器的完整头文件。包括varying头文件。cover着色器设计为简单的顶点/uv仅纹理渲染，覆盖渲染表面。着色器代码可能包含在预编译时替换的模板。
+         */
         static COVER_FRAGMENT_HEADER: string;
+        /**
+         * 顶点着色器的正文。cover着色器设计为简单的顶点/uv仅纹理渲染，覆盖渲染表面。着色器代码可能包含在预编译时替换的模板。
+         */
         static COVER_VERTEX_BODY: string;
+        /**
+         * 片段着色器的正文。cover着色器设计为简单的顶点/uv仅纹理渲染，覆盖渲染表面。着色器代码可能包含在预编译时替换的模板。
+         */
         static COVER_FRAGMENT_BODY: string;
         isWebGL: boolean;
         autoPurge: number;
@@ -3780,9 +4073,9 @@ declare namespace createjs {
      * 支持基本的换行（使用lineWidth），仅在空格和制表符上换行。
      * 注意，您可以使用{@link DOMElement}将HTML文本显示在canvas的上方或下方，通过{@link localToGlobal}方法定位，以此作为输入文本使用。
      * 
-     * 注意，Text不支持HTML文本，并且一个Text实例只能显示一种字体样式。要使用多种字体样式，您需要创建多个Text实例，并手动定位它们。
+     * **注意，Text不支持HTML文本，并且一个Text实例只能显示一种字体样式。** 要使用多种字体样式，您需要创建多个Text实例，并手动定位它们。
      * 
-     * 案例：
+     * #### 示例
      * ```js
      * var text = new createjs.Text("Hello World", "20px Arial", "#ff7700");
      * text.x = 100;
@@ -3790,11 +4083,7 @@ declare namespace createjs {
      * ```
      * CreateJS Text支持web字体（与Canvas的规则相同）。字体必须加载并由浏览器支持才能显示。
      * 
-     * 注意：渲染文本可能比较消耗性能，因此尽可能缓存实例。请注意，并非所有浏览器都会呈现完全相同的文本。
-     * 
-     * 如果你是高手，你可以自己封装一个RichText类，哈哈哈！
-     * 
-     * @see http://www.createjs.com/Docs/EaselJS/classes/Text.html
+     * **注意：** 渲染文本可能比较消耗性能，因此尽可能缓存实例。请注意，并非所有浏览器都会呈现完全相同的文本。
      */
     class Text extends DisplayObject {
         /**
@@ -3818,71 +4107,215 @@ declare namespace createjs {
         maxWidth: number;
         /** 如果大于0，文本将绘制为指定宽度的笔划（轮廓）。 */
         outline: number;
+        /** 要显示的文本。 */
         text: string;
         /** 水平文本对齐方式。"start"、"end"、"left"、"right"和"center"中的任意一个。有关详细信息，请查看whatwg规范。默认值为"left"。 */
         textAlign: string;
+        /**
+         * 字体上的垂直对齐点。可选值包括"top"（顶部）、"hanging"（悬挂）、"middle"（中间）、"alphabetic"（字母基线）、"ideographic"（表意基线）或"bottom"（底部）。有关详细信息请查看whatwg规范。默认值为"top"。
+         */
         textBaseline: string;
 
         // methods
         clone(): Text;
+        /**
+         * 返回多行文本的近似高度，通过将行数乘以lineHeight（如果指定）或getMeasuredLineHeight。注意，此操作需要运行文本流动逻辑，这会带来相关的CPU成本。
+         * @returns 未变换的多行文本的近似高度。
+         */
         getMeasuredHeight(): number;
+        /**
+         * 返回文本的近似行高，忽略lineHeight属性。这是基于测量一个"M"字符的宽度乘以1.2，为大多数字体提供一个近似的行高。
+         * @returns 返回文本的近似行高，忽略lineHeight属性。
+         * 该值基于字符"M"的测量宽度乘以1.2计算得出，该计算方式可近似表示大多数字体的em单位。
+         */
         getMeasuredLineHeight(): number;
+        /**
+         * 返回未换行的文本的测量宽度。使用getBounds获取更可靠的值。
+         * @returns 未换行的文本的测量宽度。
+         */
         getMeasuredWidth(): number;
+        /**
+         * 返回一个包含width、height和lines属性的对象。width和height是绘制文本的视觉宽度和高度。lines属性包含一个字符串数组，每个字符串代表将绘制的文本行，考虑到换行和换行。这些字符串没有尾随空白。
+         * @returns 一个包含width、height和lines属性的对象。
+         */
         getMetrics(): Object;
+        /**
+         * 提供一个链式快捷方法，用于在实例上设置多个属性。
+         * 
+         * #### 示例
+         * ```js
+         * var myGraphics = new createjs.Graphics().beginFill("#ff0000").drawCircle(0, 0, 25);
+         * var shape = stage.addChild(new Shape()).set({graphics:myGraphics, x:100, y:100, alpha:0.5});
+         * ```
+         * @param props 一个包含要复制到DisplayObject实例的属性的通用对象。
+         * @returns 返回方法调用的实例（用于链式调用）。
+         */
         set(props: Object): Text;
-        setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, regX?: number, regY?: number): Text;
     }
-
+    /**
+     * Ticker 提供了一个以固定间隔触发的集中化计时器或心跳广播。监听器可以订阅 tick 事件，以便在设定的时间间隔过去时接收到通知。
+     * 
+     * 注意，Ticker.framerate = 30; 是目标间隔，当CPU负载较高时，可能会以较慢的间隔广播。Ticker类使用静态接口（例如Ticker.framerate = 30;），不能实例化。
+     * 
+     * #### 案例
+     * ```js
+     * createjs.Ticker.addEventListener("tick", handleTick);
+     * function handleTick(event) {
+     *     // Actions carried out each tick (aka frame)
+     *     if (!event.paused) {
+     *         // Actions carried out when the Ticker is not paused.
+     *     }
+     * }
+     * ```
+     * 
+     */
     class Ticker {
         // properties
-        static framerate: number;
-        static interval: number;
-        static maxDelta: number;
-        static paused: boolean;
-        static RAF: string;
-        static RAF_SYNCHED: string;
-        static TIMEOUT: string;
-        static timingMode: string;
         /**
-         * @deprecated
+         * 指示目标帧率（FPS）。实际上只是interval的快捷方式，其中framerate == 1000/interval。
          */
-        static useRAF: boolean;
+        static framerate: number;
+        /**
+         * 指示目标时间（以毫秒为单位）之间的间隔。默认值为50（20 FPS）。
+         * 注意，实际的tick间隔可能会比指定的间隔更大，具体取决于CPU负载。如果ticker使用RAF计时模式，则忽略此属性。
+         */
+        static interval: number;
+        /**
+         * 指定tick事件对象中delta属性的最大值。
+         * 这在构建基于时间的动画和系统时非常有用，可以防止因后台标签页、系统休眠、弹窗对话框或其他阻塞性程序导致的大时间间隔问题。
+         * 通常将预期帧时长的两倍作为有效值（例如在40fps运行时设置maxDelta=50）。
+         * 
+         * 这不会影响其他值（如time、runTime等），因此如果在同时使用delta和其他值时启用maxDelta，可能会遇到问题。
+         * 
+         * 如果设为0，则表示没有最大值限制。
+         * @default 0
+         */
+        static maxDelta: number;
+        /**
+         * 当ticker暂停时，所有侦听器仍会收到tick事件，但事件的paused属性为true。
+         * 
+         * #### 案例
+         * ```js
+         * createjs.Ticker.addEventListener("tick", handleTick);
+         * createjs.Ticker.paused = true;
+         * function handleTick(event) {
+         *     console.log(event.paused,
+         *         createjs.Ticker.getTime(false),
+         *         createjs.Ticker.getTime(true));
+         * }
+         * ```
+         * @default false
+         */
+        static paused: boolean;
+        /**
+         * 在这种模式下，Ticker会传递requestAnimationFrame心跳，完全忽略目标帧率。
+         * 因为requestAnimationFrame的频率是不确定的，任何使用这种模式的内容都应该基于时间。
+         * 您可以利用getTime和tick事件对象的"delta"属性来简化这一点。
+         * 
+         * 如果requestAnimationFrame API不支持，则回退到TIMEOUT。
+         * @default "raf"
+         */
+        static RAF: string;
+        /**
+         * 在这种模式下，Ticker使用requestAnimationFrame API，但尝试将ticks同步到目标帧率。
+         * 它使用一个简单的启发式方法，比较RAF返回的时间与当前帧的目标时间，并在时间在某个阈值内时调度tick。
+         * 
+         * 这种模式的时间间隔方差比TIMEOUT更高，但不需要内容基于时间，同时获得该API（屏幕同步、后台限制）的好处。
+         * 
+         * 通常，这种模式在RAF频率的除数时，时间间隔的方差最低。通常是60，所以10、12、15、20和30的帧率效果很好。
+         * 
+         * 如果requestAnimationFrame API不支持，则回退到TIMEOUT。
+         * 
+         * @default "synched"
+         */
+        static RAF_SYNCHED: string;
+        /**
+         * 在这种模式下，Ticker使用setTimeout API。
+         * 这种模式提供可预测的、自适应的帧定时，但不会提供requestAnimationFrame的优点（屏幕同步、后台限制）。
+         * 
+         * @default "timeout"
+         */
+        static TIMEOUT: string;
+        /**
+         * 指定使用的计时API（setTimeout或requestAnimationFrame）和模式。
+         * 请参阅TIMEOUT、RAF和RAF_SYNCHED以获取模式详细信息。
+         * 
+         * @default Ticker.TIMEOUT
+         */
+        static timingMode: string;
 
         // methods
+        /**
+         * 类似于{@link getTime}方法，但返回最近一次{@link tick}事件对象的时间。
+         * @param runTime 如果为true，则返回runTime属性，否则返回time属性。
+         * @returns 返回最近tick事件中的time或runTime属性，如果没有则返回-1。
+         */
         static getEventTime(runTime?: boolean): number;
         /**
-         * @deprecated - use the 'framerate' property instead
+         * @deprecated - 请改用 {@link framerate} 属性
          */
         static getFPS(): number;
         /**
-         * @deprecated - use the 'interval' property instead
+         * @deprecated - 请改用 {@link interval} 属性
          */
         static getInterval(): number;
+        /**
+         * 返回实际的帧/秒。
+         * @param ticks 要测量的历史tick数量，用于计算实际帧数/每秒tick数。默认为每秒的tick数量。
+         * @returns 实际的帧/秒。根据性能，这可能与目标帧/秒不同。
+         */
         static getMeasuredFPS(ticks?: number): number;
+        /**
+         * 返回一个tick中花费的平均时间。这可能与{@link getMeasuredFPS}返回的值有很大差异，因为它只测量在tick执行堆栈中花费的时间。
+         * 
+         * 示例1：目标帧率为20，getMeasuredFPS()返回20fps，表示一个tick结束和下一个tick结束之间的平均时间为50ms。
+         * 然而，getMeasuredTickTime返回15ms。这表明在tick结束和下一个tick结束之间可能存在35ms的“空闲”时间。
+         * 
+         * 示例2：目标帧率为30，framerate返回10fps，表示一个tick结束和下一个tick结束之间的平均时间为100ms。
+         * 然而，getMeasuredTickTime返回20ms。这表明除了tick之外，还有其他东西正在使用~80ms（另一个脚本、DOM渲染等）。
+         * @param ticks 用于计算单个tick平均耗时的历史tick次数。默认为每秒的tick次数。若仅需获取最后一次tick的耗时，可传入1。
+         * @returns 以毫秒为单位的tick中花费的平均时间。
+         */
         static getMeasuredTickTime(ticks?: number): number;
         /**
-         * @deprecated - use the 'paused' property instead
+         * @deprecated - 请改用 {@link paused} 属性
          */
         static getPaused(): boolean;
+        /**
+         * 返回Ticker广播的tick次数。
+         * @param pauseable 指示是否包括Ticker暂停期间广播的tick。如果为true，则仅返回Ticker未暂停期间广播的tick事件。如果为false，则包括Ticker暂停期间广播的tick事件。默认值为false。
+         * @returns 广播的tick次数。
+         */
         static getTicks(pauseable?: boolean): number;
+        /**
+         * 返回自Ticker初始化以来经过的毫秒数。如果Ticker未初始化，则返回-1。例如，您可以在时间同步动画中使用此方法来确定确切的时间流逝。
+         * @param runTime 如果为true，则仅返回Ticker未暂停期间经过的时间。如果为false，则返回自第一个tick事件侦听器添加以来经过的总时间。
+         * @returns 自Ticker初始化以来经过的毫秒数，或-1。
+         */
         static getTime(runTime?: boolean): number;
+        /**
+         * 开始tick。当第一个侦听器添加时自动调用。
+         */
         static init(): void;
+        /**
+         * 停止Ticker并移除所有侦听器。使用init()重新启动Ticker。
+         */
         static reset(): void;
         /**
-         * @deprecated - use the 'framerate' property instead
+         * @deprecated - 请改用 {@link framerate} 属性
          */
         static setFPS(value: number): void;
         /**
-         * @deprecated - use the 'interval' property instead
+         * @deprecated - 请改用 {@link interval} 属性
          */
         static setInterval(interval: number): void;
         /**
-         * @deprecated - use the 'paused' property instead
+         * @deprecated - 请改用 {@link paused} 属性
          */
         static setPaused(value: boolean): void;
 
         // EventDispatcher mixins
-        static addEventListener(type: string, listener: Stage, useCapture?: boolean): Stage;
+        /*static addEventListener(type: string, listener: Stage, useCapture?: boolean): Stage;
         static addEventListener(type: string, listener: (eventObj: Object) => boolean, useCapture?: boolean): Function;
         static addEventListener(type: string, listener: (eventObj: Object) => void, useCapture?: boolean): Function;
         static addEventListener(type: string, listener: { handleEvent: (eventObj: Object) => boolean; }, useCapture?: boolean): Object;
@@ -3906,7 +4339,7 @@ declare namespace createjs {
         static removeEventListener(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): void;
         static removeEventListener(type: string, listener: Function, useCapture?: boolean): void; // It is necessary for "arguments.callee"
         static toString(): string;
-        static willTrigger(type: string): boolean;
+        static willTrigger(type: string): boolean;*/
     }
     /**
      * 目前没有TickerEvent的定义
@@ -3966,15 +4399,108 @@ declare namespace createjs {
          */
         static get(): number;
     }
-
+    /**
+     * 一个用于处理数值型CSS字符串属性（例如 top、left）的TweenJS插件。使用前只需在TweenJS加载完成后安装即可：
+     * ```js
+     * createjs.CSSPlugin.install();
+     * ```
+     * CSSPlugin几乎可以处理任何样式属性或单位。它通过在元素的style对象上查找初始值来识别CSS值。它还使用这个初始值来解析出要使用的单位。
+     * 
+     * 在以下示例中，top将使用em单位作为样式进行补间，但width不会作为样式进行补间（因为没有初始的内联样式值）。
+     * 
+     * ```js
+     * myEl.style.top = "10em";
+     * createjs.Tween.get(myEl).to({top:20, width:100}, 1000);
+     * ```
+     * CSSPlugin可以也使用计算样式。请查看AbstractTween/compute:property了解更多信息。
+     * 
+     * CSSPlugin对transform样式有特定的处理，只要它们的操作和单位匹配，就会补间任何变换。例如：
+     * 
+     * ```js
+     * myEl.style.transform = "translate(20px, 30px)";
+     * createjs.Tween.get(myEl)
+     *     .to({transform: "translate(40px, 50px)"}, 900) // would be tweened, everything matches
+     *     .to({transform: "translate(5em, 300px)"}, 900) // would NOT be tweened, different units (px vs em)
+     *     .to({transform: "scaleX(2)"}, 900) // would NOT be tweened, different operations (translate vs rotate)
+     * ```
+     * 你也可以使用*来复制前一个变换中的操作。
+     * 
+     * ```js
+     * myEl.style.transform = "translate(0px, 0px) rotate(0deg)";
+     * createjs.Tween.get(myEl)
+     *     .to({transform: "translate(50px, 50px) *"}, 900) // would copy the "rotate" operation
+     *     .to({transform: "* rotate(90deg)"}, 900) // would copy the "translate" operation
+     * ```
+     * 
+     * 请注意，CSS插件未包含在TweenJS压缩文件中。
+     */
     class CSSPlugin {
         constructor();
 
         // properties
-        static cssSuffixMap: Object;
+        /**
+         * 默认情况下，CSSPlugin仅使用目标元素的内联样式（即通过style属性、`style`属性或`cssText`设置）来确定哪些属性应通过CSS进行补间动画，以及使用何种单位。
+         * 
+         * 设置`compute`为`true`会使CSSPlugin使用`getComputedStyle`来确定哪些属性应通过CSS进行补间动画，以及使用何种单位。
+         * 
+         * 使用`getComputedStyle`的优点是它包括所有影响目标元素的样式，然而也有一些重要的考虑因素：
+         * 
+         * - `getComputedStyle`是计算密集型的，如果同时创建大量补间动画，可能会导致性能问题。
+         * - 样式被规范化。例如，指定为百分比的宽度值可能会计算为`px`，CSSPlugin将使用该值进行补间动画。不同的浏览器可能会以不同的方式规范化值。
+         * - 有大量的计算样式，这增加了属性被识别为样式的机会。
+         * - 不适用于IE8或更低版本。
+         * 
+         * 可以在每个补间的基础上通过设置`tween.pluginData.CSS_compute`来覆盖此设置。例如，要为新的补间启用计算样式，可以使用：
+         * 要为新的补间启用计算样式，可以使用：
+         * 
+         * ```js
+         * createjs.Tween.get(el, {pluginData:{CSS_compute:true}}).to({top:20}, 1000);
+         * ```
+         * 
+         * 考虑到计算的考虑，建议您保持默认的全局设置为false，并通过pluginData覆盖特定情况。
+         * @default false
+         */
+        static compute:boolean;
+        /**
+         * 只读。此插件的唯一标识字符串。TweenJS使用此属性来确保不会在补间动画上重复安装同一插件。
+         */
+        static readonly ID:string;
+        /**
+         * 只读。用于匹配CSS值的正则表达式。
+         */
+        static readonly VALUE_RE: RegExp;
 
         // methods
+        /**
+         * 在补间更新属性之前调用。更多信息请查看{@link change}方法。
+         * @param tween 
+         * @param step 
+         * @param prop 
+         * @param value 
+         * @param ratio 
+         * @param end 
+         * @returns 
+         */
+        static change(tween:Tween, step:any, prop:string, value:any, ratio:number, end:boolean):any;
+        /**
+         * 当TweenJS在补间上初始化新属性时调用。更多信息请查看{@link init}方法。
+         * @param tween 
+         * @param prop 
+         * @param value 
+         * @returns 
+         */
+        static init(tween:Tween, prop:string, value:any):any;
+        /**
+         * 安装此插件以用于TweenJS。在TweenJS加载后只需调用一次即可启用此插件。
+         */
         static install(): void;
+        /**
+         * 当补间添加新步骤时调用（例如添加新的"to"动作）。更多信息请查看{@link step}方法。
+         * @param tween 
+         * @param step 
+         * @param props 
+         */
+        static step(tween:Tween, step:any, props:any):void;
     }
     /**
      * 当HTML视频进行搜索时，包括循环时，在新帧可用之前有一段不确定的时间。这可能会导致视频在绘制到画布上时闪烁或闪烁。VideoBuffer类通过将每一帧绘制到屏幕外画布并在寻道过程中保留前一帧来解决这个问题。
@@ -3996,6 +4522,27 @@ declare namespace createjs {
          */
         getImage(): HTMLCanvasElement;
     }
+    /**
+     * Ease类提供了一组缓动函数，用于TweenJS的补间动画。
+     * 它不使用标准的4参数缓动签名。
+     * 相反，它使用一个参数，表示当前补间动画的线性比例（0到1）。
+     * 
+     * 大多数Ease类的方法可以直接作为缓动函数传递：
+     * 
+     * ```js
+     * createjs.Tween.get(target).to({x:100}, 500, createjs.Ease.linear);
+     * ```
+     * 
+     * 然而，以"get"开头的方法将返回一个基于参数值的缓动函数：
+     * 
+     * ```js
+     * createjs.Tween.get(target).to({y:200}, 500, createjs.Ease.getPowIn(2.2));
+     * ```
+     * 
+     * 请查看TweenJS.com上的spark表示例，了解不同缓动类型的概述。
+     * 
+     * *Equations derived from work by Robert Penner.*
+     */
     class Ease {
         // methods
         static backIn: (amount: number) => number;
@@ -4013,17 +4560,75 @@ declare namespace createjs {
         static elasticIn: (amount: number) => number;
         static elasticInOut: (amount: number) => number;
         static elasticOut: (amount: number) => number;
+        /**
+         * 模仿Adobe Flash/Animate中的简单-100到100缓动。
+         * @param amount 一个从-1（缓入）到1（缓出）的值，表示缓动的强度和方向。
+         * @returns 缓动函数
+         */
         static get(amount: number): (amount: number) => number;
+        /**
+         * 可配置的"back in"缓动。
+         * @param amount 缓动的强度。
+         * @returns 缓动函数
+         */
         static getBackIn(amount: number): (amount: number) => number;
+        /**
+         * 可配置的"back in out"缓动。
+         * @param amount 缓动的强度。
+         * @returns 缓动函数
+         */
         static getBackInOut(amount: number): (amount: number) => number;
+        /**
+         * 可配置的"back out"缓动。
+         * @param amount 缓动的强度。
+         * @returns 缓动函数
+         */
         static getBackOut(amount: number): (amount: number) => number;
+        /**
+         * 可配置的弹性缓动。
+         * @param amplitude 振幅。
+         * @param period 周期。
+         * @returns 缓动函数
+         */
         static getElasticIn(amplitude: number, period: number): (amount: number) => number;
+        /**
+         * 可配置的弹性缓动。
+         * @param amplitude 振幅。
+         * @param period 周期。
+         * @returns 缓动函数
+         */
         static getElasticInOut(amplitude: number, period: number): (amount: number) => number;
+        /**
+         * 可配置的弹性缓动。
+         * @param amplitude 振幅。
+         * @param period 周期。
+         * @returns 缓动函数
+         */
         static getElasticOut(amplitude: number, period: number): (amount: number) => number;
-        static getPowIn(pow: number): (amount: number) => number;
+        /**
+         * 可配置的指数缓动。
+         * @param pow The exponent to use (ex. 3 would return a cubic ease).
+         * @returns 缓动函数
+         */
+        static getPowOut(pow: number): (amount: number) => number;
+        /**
+         * 可配置的指数缓动。
+         * @param pow 使用的幂（例如3将返回一个立方缓动）。
+         * @returns 缓动函数
+         */
         static getPowInOut(pow: number): (amount: number) => number;
+        /**
+         * 可配置的指数缓动。
+         * @param pow 使用的幂（例如3将返回一个立方缓动）。
+         * @returns 缓动函数
+         */
         static getPowOut(pow: number): (amount: number) => number;
         static linear: (amount: number) => number;
+        /**
+         * 与linear相同。
+         * @param amount 
+         * @returns 
+         */
         static none: (amount: number) => number;    // same as linear
         static quadIn: (amount: number) => number;
         static quadInOut: (amount: number) => number;
@@ -4038,12 +4643,69 @@ declare namespace createjs {
         static sineInOut: (amount: number) => number;
         static sineOut: (amount: number) => number;
     }
-
+    /**
+     * TweenJS 的运动引导插件，用于定义对象可以跟随或沿其定向的路径。
+     * 
+     * 使用此插件前，需在TweenJS加载完成后安装。要定义路径，请添加
+     * ```js
+     * createjs.MotionGuidePlugin.install();
+     * ```
+     * 
+     * #### 示例
+     * ```js
+     * // Using a Motion Guide
+     * createjs.Tween.get(target).to({guide:{ path:[0,0, 0,200,200,200, 200,0,0,0] }},7000);
+     * // Visualizing the line
+     * graphics.moveTo(0,0).curveTo(0,200,200,200).curveTo(200,0,0,0);
+     * ```
+     * 
+     * 每条路径需要预先计算，以确保有快速的性能。由于预先计算，因此没有内置支持在tween过程中更改路径。这些是Guide对象的属性：
+     * - path: 必填，数组 : 用于通过moveTo和1到n次curveTo调用绘制路径的x/y坐标点。
+     * - start: 可选，0-1 : 初始位置，默认0，除非沿同一路径继续。
+     * - end: 可选，0-1 : 最终位置，默认1，如果没有指定。
+     * - orient: 可选，字符串 : "fixed"/"auto"/"cw"/"ccw"
+     *   - "fixed" 强制对象在整个移动过程中始终面向路径方向（相对于起始旋转角度），
+     *   - "auto" 沿路径相对线旋转对象，
+     *   - "cw"/"ccw" 强制顺时针或逆时针旋转，包括Adobe Flash/Animate-like行为。这可能会覆盖你的结束旋转值。
+     * 
+     * Guide对象不应在tweens之间共享，即使所有属性都相同，库在后台存储这些对象的信息，共享它们可能会导致意外行为。
+     * tweens范围外的值将基于定义的曲线部分进行“最佳猜测”。
+     */
     class MotionGuidePlugin {
-        constructor();
-
+        //properties
+        /**
+         * 只读属性。该插件的唯一标识字符串。被TweenJS用来确保不会在同一个补间动画上重复安装插件。
+         */
+        static readonly ID: string;
         //methods
-        static install(): Object;
+        /**
+         * 在补间更新属性之前调用。更多信息请查看{@link SamplePlugin.change | change}方法。
+         * @param tween 
+         * @param step 
+         * @param prop 
+         * @param value 
+         * @param ratio 
+         * @param end 
+         */
+        change(tween:Tween, step:any, prop:string, value:any, ratio:number, end:boolean):any;
+        /**
+         * 当TweenJS在补间上初始化新属性时调用。更多信息请查看{@link init}方法。
+         * @param tween 
+         * @param prop 
+         * @param value 
+         */
+        static init(tween:Tween, prop:string, value:any):any;
+        /**
+         * 安装此插件以用于TweenJS。在TweenJS加载后只需调用一次即可启用此插件。
+         */
+        static install(): void;
+        /**
+         * 当补间添加新步骤时调用（即，向补间添加新的“to”操作）。更多信息请查看{@link step}方法。
+         * @param tween 
+         * @param step 
+         * @param props 
+         */
+        static step(tween:Tween, step:any, props:any):void;
     }
     /**
      * PreloadJS 插件提供了一种将功能注入 PreloadJS 的方式，以加载 PreloadJS 不支持的文件类型，或者以 PreloadJS 不支持的方式进行加载。
