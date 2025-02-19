@@ -56,7 +56,9 @@ declare namespace createjs {
         bubbles: boolean;
         /** 指示是否可以通过preventDefault取消此事件的默认行为。这是通过Event构造函数设置的 */
         cancelable: boolean;
-        /** 正在从中调度冒泡事件的当前目标。对于非冒泡事件，这将始终与目标相同。例如，如果childObj.parent=parentObj，并且从childObj生成冒泡事件，则parentObj上的侦听器将接收到target=childObj（原始目标）和currentTarget=parentObj（添加侦听器的位置）的事件 */
+        /** 正在从中调度冒泡事件的当前目标。对于非冒泡事件，这将始终与目标相同。
+         * 例如，如果childObj.parent=parentObj，并且从childObj生成冒泡事件，
+         * 则parentObj上的侦听器将接收到target=childObj（原始目标）和currentTarget=parentObj（添加侦听器的位置）的事件 */
         currentTarget: any; // It is 'Object' type officially, but 'any' is easier to use.
         /** 指示是否对此事件调用了preventDefault */
         defaultPrevented: boolean;
@@ -105,7 +107,8 @@ declare namespace createjs {
          */
         clone(): Event;
         /**
-         * 如果事件可取消，则将{@link defaultPrevented}设置为true。反映DOM2事件标准。一般来说，如果事件可取消，则调用`preventDefault()`将取消与该事件关联的默认行为。
+         * 如果事件可取消，则将{@link defaultPrevented}设置为true。反映DOM2事件标准。一般来说，如果事件可取消，
+         * 则调用`preventDefault()`将取消与该事件关联的默认行为。
          */
         preventDefault(): void;
         /**
@@ -144,13 +147,17 @@ declare namespace createjs {
      * 
      * 您可以扩展EventDispatcher，也可以使用EventDispatcher的{@link initialize}方法将其方法混合到现有的原型或实例中。
      * 
-     * EventDispatcher与CreateJS Event类一起提供了一个基于DOM Level 2事件模型的扩展事件模型，包括addEventListener、removeEventListener和dispatchEvent。它支持冒泡/捕获、preventDefault, stopPropagation, stopImmediatePropagation和handleEvent。
+     * EventDispatcher与CreateJS Event类一起提供了一个基于DOM Level 2事件模型的扩展事件模型，
+     * 包括addEventListener、removeEventListener和dispatchEvent。
+     * 它支持冒泡/捕获、preventDefault, stopPropagation, stopImmediatePropagation和handleEvent。
      * 
-     * EventDispatcher还公开了一个{@link on}方法，这使得创建作用域监听器、只运行一次的监听器以及具有相关任意数据的监听器变得更加容易。{@link off}方法只是removeEventListener的别名。
+     * EventDispatcher还公开了一个{@link on}方法，这使得创建作用域监听器、
+     * 只运行一次的监听器以及具有相关任意数据的监听器变得更加容易。{@link off}方法只是removeEventListener的别名。
      * 
-     * DOM Level 2模型的另一个补充是{@link removeAllEventListener}方法，该方法可用于所有事件的监听器，或特定事件的监听器。Event对象还包括一个{@link remove}方法，用于删除活动侦听器。
+     * DOM Level 2模型的另一个补充是{@link removeAllEventListener}方法，该方法可用于所有事件的监听器，或特定事件的监听器。
+     * Event对象还包括一个{@link remove}方法，用于删除活动侦听器。
      * 
-     * Example
+     * ### 案例
      * 
      * 将EventDispatcher功能添加到"MyClass"类中。
      * ```js
@@ -186,7 +193,7 @@ declare namespace createjs {
         /**
          * 添加指定的事件侦听器。请注意，向同一个对象添加多个监听器将导致多个监听器被触发。
          * 
-         * 案例：
+         * ### 案例
          * ```js
          * displayObject.addEventListener("click", handleClick);
          * function handleClick(event) {
@@ -206,7 +213,9 @@ declare namespace createjs {
         //addEventListener(type: string, listener: (e?:any) => void, useCapture?: boolean): ()=>{}
         /**
          * 将指定的事件分派给所有侦听器。
-         * @param eventObj 具有"type"属性或字符串类型的对象。虽然通用对象可以工作，但建议使用CreateJS事件实例。如果使用了字符串，dispatchEvent将在必要时使用指定的类型构造一个Event实例。后一种方法可以用于避免可能没有任何侦听器的非冒泡事件的事件对象实例化。
+         * @param eventObj 具有"type"属性或字符串类型的对象。虽然通用对象可以工作，但建议使用CreateJS事件实例。
+         * 如果使用了字符串，dispatchEvent将在必要时使用指定的类型构造一个Event实例。
+         * 后一种方法可以用于避免可能没有任何侦听器的非冒泡事件的事件对象实例化。
          * @param bubbles 指定将字符串传递给eventObj时的气泡值。
          * @param cancelable 指定将字符串传递给eventObj时可取消的值。
          * @returns 如果对可取消事件调用了preventDefault()，则返回false，否则返回true。
@@ -240,9 +249,10 @@ declare namespace createjs {
          * 
          * 此方法通过创建匿名包装器函数并使用addEventListener订阅它来工作。返回包装器函数以与removeEventListener一起使用（或关闭）。
          * 
-         * 重要提示：要删除添加了on的侦听器，您必须将返回的包装器函数作为侦听器传递，或使用remove。同样，每次调用NEW包装器函数时，都会订阅，因此使用相同参数对on的多次调用将创建多个侦听器。
+         * 重要提示：要删除添加了on的侦听器，您必须将返回的包装器函数作为侦听器传递，或使用remove。
+         * 同样，每次调用NEW包装器函数时，都会订阅，因此使用相同参数对on的多次调用将创建多个侦听器。
          * 
-         * 案例：
+         * ### 案例
          * ```js
          * var listener = myBtn.on("click", handleClick, null, false, {count:3});
          * function handleClick(evt, data) {
@@ -257,7 +267,8 @@ declare namespace createjs {
          * ```
          * @param type 事件类型
          * @param listener 侦听器
-         * @param scope 执行侦听器的作用域。对于函数侦听器，默认为dispatcher/currentTarget，对于对象侦听器，则默认为侦听器本身（即使用handleEvent）。直白点说就是this指向谁，默认是指向侦听器自身。
+         * @param scope 执行侦听器的作用域。对于函数侦听器，默认为dispatcher/currentTarget，对于对象侦听器，
+         * 则默认为侦听器本身（即使用handleEvent）。直白点说就是this指向谁，默认是指向侦听器自身。
          * @param once 是否仅执行一次侦听器
          * @param data 传参
          * @param useCapture 
@@ -271,7 +282,7 @@ declare namespace createjs {
         /**
          * 删除指定类型的所有侦听器，或所有类型的所有监听器。
          * 
-         * 案例：
+         * ### 案例
          * ```js
          * // Remove all listeners
          * displayObject.removeAllEventListeners();
@@ -287,7 +298,7 @@ declare namespace createjs {
          * 
          * 重要提示：您必须传递添加事件时使用的确切函数引用。如果使用代理函数或函数闭包作为回调，则必须使用代理/闭包引用——新的代理或闭包将无法工作。
          * 
-         * 案例：
+         * ### 案例
          * ```js
          * displayObject.removeEventListener("click", handleClick);
          * ```
@@ -330,10 +341,13 @@ declare namespace createjs {
      */
     export function indexOf(array: any[], searchElement: Object): number;
     /**
-     * 通过创建格式为prefix_methodName的别名，提升超类上被重写的任何方法。建议使用超类的名称作为前缀。超类的构造函数的别名总是以前缀_构造函数的格式添加。
+     * 通过创建格式为prefix_methodName的别名，提升超类上被重写的任何方法。建议使用超类的名称作为前缀。
+     * 超类的构造函数的别名总是以前缀_构造函数的格式添加。
      * 这允许子类在不使用function.call的情况下调用超类方法，从而提供更好的性能。
      * 
-     * 例如，如果MySubClass扩展了MySuperClass，并且两者都定义了一个draw方法，那么调用promote(MySubClass, "MySuperClass")将向MySubClass添加一个MySupClass_constructor方法，并将MySupClass上的draw方法提升为MySupClass_draw的MySubClass原型。
+     * 例如，如果MySubClass扩展了MySuperClass，并且两者都定义了一个draw方法，
+     * 那么调用promote(MySubClass, "MySuperClass")将向MySubClass添加一个MySupClass_constructor方法，
+     * 并将MySupClass上的draw方法提升为MySupClass_draw的MySubClass原型。
      * 
      * 这应该在类的原型完全定义之后调用。
      * 
@@ -364,7 +378,8 @@ declare namespace createjs {
         clone(): AlphaMapFilter;
     }
     /**
-     * 将遮罩图像（或画布）中的alpha应用于目标，这样结果的alpha通道将从遮罩中导出，而RGB通道将从目标中复制。例如，这可以用于将alpha掩码应用于显示对象。
+     * 将遮罩图像（或画布）中的alpha应用于目标，这样结果的alpha通道将从遮罩中导出，而RGB通道将从目标中复制。
+     * 例如，这可以用于将alpha掩码应用于显示对象。
      * 这也可以用于将JPG压缩的RGB图像与PNG32 alpha掩码组合，这可以导致比包含RGB的单个PNG32小得多的文件大小。
      */
     class AlphaMaskFilter extends Filter {
@@ -398,8 +413,8 @@ declare namespace createjs {
      * 
      * 4.带有SVG源的位图会用跨源数据污染画布，这会阻止交互性。除最近的Firefox版本外，所有浏览器都会出现这种情况。
      * 
-     * 5.对于跨源加载的图像，如果使用鼠标交互、使用 getObjectUnderPoint等方法、应用滤镜或者缓存时会抛出cross-origin security报错。
-     * 你可以通过在将图像传递给EaselJS之前设置img标签的 crossOrigin 属性来解决这个问题，例如：img.crossOrigin="Anonymous";
+     * 5.对于跨源加载的图像，如果使用鼠标交互、使用`getObjectUnderPoint`等方法、应用滤镜或者缓存时会抛出cross-origin security报错。
+     * 你可以通过在将图像传递给EaselJS之前设置img标签的 `crossOrigin` 属性来解决这个问题，例如：`img.crossOrigin="Anonymous"`;
      */
     class Bitmap extends DisplayObject {
         /**
@@ -421,9 +436,9 @@ declare namespace createjs {
          * 
          * 注意：
          * 
-         * 1.视频源必须设置宽度/高度才能正确使用sourceRect
+         * - 视频源必须设置宽度/高度才能正确使用sourceRect
          * 
-         * 2.缓存对象将忽略sourceRect属性
+         * - 缓存对象将忽略sourceRect属性
          */
         sourceRect: Rectangle;
 
@@ -473,11 +488,13 @@ declare namespace createjs {
          * 
          * 4.如果options.useGL为undefined，将执行上下文2D缓存。
          * 
-         * 这意味着您可以使用StageGL和2D的任何组合，其中一个、两个或两个阶段和缓存都是WebGL。在StageGL显示列表中使用"new"是非常不受欢迎的，但仍然是一种选择。
+         * 这意味着您可以使用StageGL和2D的任何组合，其中一个、两个或两个阶段和缓存都是WebGL。
+         * 在StageGL显示列表中使用"new"是非常不受欢迎的，但仍然是一种选择。
          * 由于负面性能原因和上述类别复杂性中提到的图像加载限制，应避免使用。
          * 
          * 当"options.useGL"设置为目标和WebGL的父阶段时，通过使用"RenderTextures"而不是画布元素来提高性能。这些是存储在GPU中的图形卡上的内部纹理。
-         * 因为它们不再是画布，所以无法执行常规画布所能执行的操作。这样做的好处是避免了将纹理从GPU来回复制到Canvas元素的速度减慢。这意味着"阶段"是可用的推荐选项。
+         * 因为它们不再是画布，所以无法执行常规画布所能执行的操作。这样做的好处是避免了将纹理从GPU来回复制到Canvas元素的速度减慢。
+         * 这意味着"阶段"是可用的推荐选项。
          * 
          * StageGL缓存不会推断绘制StageGL当前无法绘制的对象的能力，即在缓存形状、文本等时不要使用WebGL上下文缓存。
          * 
@@ -512,7 +529,8 @@ declare namespace createjs {
          * @param scale 将创建缓存的比例。例如，如果使用myShape.cache（0,0100100.2）缓存矢量形状，则生成的cacheCanvas将为200x200 px。
          * 这样可以更逼真地缩放和旋转缓存的元素。默认值为1。
          * @param {Object} [options=undefined] 为缓存逻辑指定其他参数。
-         * @param {undefined|"new"|"stage"|StageGL} [options.useGL=undefined] 选择是使用上下文2D还是WebGL渲染，以及是创建新的舞台实例还是使用现有的舞台实例。
+         * @param {undefined|"new"|"stage"|StageGL} [options.useGL=undefined] 选择是使用上下文2D还是WebGL渲染，
+         * 以及是创建新的舞台实例还是使用现有的舞台实例。
          * 有关使用的详细信息，请参阅上文。
          * @for BitmapCache
          */
@@ -542,7 +560,7 @@ declare namespace createjs {
     /**
      * 对位图使用九宫格缩放。
      * 
-     * 案例：
+     * ### 案例
      * ```js
      * var sb = new createjs.ScaleBitmap(image, new createjs.Rectangle(12, 12, 5, 10));
      * sb.setDrawSize(200, 300);
@@ -556,9 +574,7 @@ declare namespace createjs {
          * @param scale9Grid 指定九区域缩放网格的内部矩形
          */
         constructor(imageOrUrl: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | Object | string, scale9Grid: Rectangle);
-
         // properties
-
         /** 用来渲染的图像。可以是Image，或者Canvas，又或者Video */
         image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement;
         /** 源图的裁剪区域 */
@@ -573,7 +589,6 @@ declare namespace createjs {
         snapToPixel: boolean;
 
         // methods
-
         /**
          * 设置用于绘制ScaleSpriteSheet的尺寸
          * @param newWidth 
@@ -650,7 +665,7 @@ declare namespace createjs {
     /**
      * 将方框模糊应用于context 2D中的DisplayObjects，并将高斯模糊应用于webgl中。请注意，此滤镜相当密集，尤其是当质量设置为高于1时。
      * 
-     * 案例：
+     * ### 案例
      * 
      * 此示例创建一个红色圆圈，然后对其应用5像素的模糊。
      * 它使用getBounds方法来解释模糊引起的扩散。
@@ -698,13 +713,13 @@ declare namespace createjs {
      * 
      * 注意：只有启用了{@link enableMouseOver}，按钮的over状态才会触发。
      * 
-     * 案例：
+     * ### 案例
      * ```js
-     * 		var helper = new createjs.ButtonHelper(myInstance, "out", "over", "down", false, myInstance, "hit");
-     * 		myInstance.addEventListener("click", handleClick);
-     * 		function handleClick(event) {
-     * 		    // Click Happened.
-     * 		}
+     * var helper = new createjs.ButtonHelper(myInstance, "out", "over", "down", false, myInstance, "hit");
+     * myInstance.addEventListener("click", handleClick);
+     * function handleClick(event) {
+     *     // Click Happened.
+     * }
      * ```
      */
     class ButtonHelper {
@@ -715,7 +730,8 @@ declare namespace createjs {
          * @param overLabel 当鼠标指针悬浮在按钮时要跳转到的标签或动画。
          * @param downLabel 当鼠标指针在按钮上按下时要跳转到的标签或动画。
          * @param play 当按钮状态改变时，是调用"gotoAndPlay"还是"gotoAndStop"？
-         * @param hitArea 一个可选项目，用作按钮的点击区域。如果未对此进行定义，则将使用按钮的可见区域。请注意，hitState可以使用与"target"参数相同的实例。
+         * @param hitArea 一个可选项目，用作按钮的点击区域。如果未对此进行定义，则将使用按钮的可见区域。
+         * 请注意，hitState可以使用与"target"参数相同的实例。
          * @param hitLabel hitArea实例上定义hitArea边界的标签或动画。如果这是null，那么将使用hitArea的默认状态。*
          */
         constructor(target: Sprite|MovieClip, outLabel?: string, overLabel?: string, downLabel?: string, play?: boolean, hitArea?: DisplayObject, hitLabel?: string);
@@ -753,17 +769,17 @@ declare namespace createjs {
     /**
      * 将颜色变换应用于DisplayObjects。
      * 
-     * 案例：
+     * ### 案例
      * 
      * 本例绘制一个红色圆圈，然后将其转换为蓝色。这是通过将所有通道相乘为0（透明度通道除外，透明度通道设置为1），然后将255添加到蓝色通道来实现的。
      * ```js
-     * 		var shape = new createjs.Shape().set({x:100,y:100});
-     * 		shape.graphics.beginFill("#ff0000").drawCircle(0,0,50);
+     * var shape = new createjs.Shape().set({x:100,y:100});
+     * shape.graphics.beginFill("#ff0000").drawCircle(0,0,50);
      * 
-     * 		shape.filters = [
-     * 		    new createjs.ColorFilter(0,0,0,1, 0,0,255,0)
-     * 		];
-     * 		shape.cache(-50, -50, 100, 100);
+     * shape.filters = [
+     *     new createjs.ColorFilter(0,0,0,1, 0,0,255,0)
+     * ];
+     * shape.cache(-50, -50, 100, 100);
      * ```
      * 有关应用滤镜的详细信息，请参见{@link Filter}。
      */
@@ -805,10 +821,9 @@ declare namespace createjs {
     /**
      * 提供用于组合矩阵以与ColorMatrixFilter一起使用的辅助函数。大多数方法都返回实例以方便链式调用。
      * 
-     * 案例：
+     * ### 案例
      * ```js
-
-     * 		myColorMatrix.adjustHue(20).adjustBrightness(50);
+     * myColorMatrix.adjustHue(20).adjustBrightness(50);
      * ```
      * 有关如何应用滤镜的示例，请参见{@link Filter}，或有关如何使用ColorMatrix更改DisplayObject颜色的示例，参见{@link ColorMatrixFilter}。
      */
@@ -894,7 +909,7 @@ declare namespace createjs {
      * 有关更改颜色的详细信息，请参见{@link ColorMatrix}。
      * 为了更容易地进行颜色变换，请考虑{@link ColorFilter}。
      * 
-     * 案例：
+     * ### 案例
      * 
      * 此示例创建一个红色圆圈，反转其色调，然后使其饱和以使其变亮。
      * ```js
@@ -927,7 +942,7 @@ declare namespace createjs {
      * 例如，放置在x=50且阿尔法=0.7的Container中的x=100且阿尔法=0.5的Shape将在x=150且阿尔法=0.35处渲染到画布上。
      * 容器有一些开销，所以通常不应该创建一个容器来容纳一个子容器。
      * 
-     * 案例：
+     * ### 案例
      * ```js
      * var container = new createjs.Container();
      * container.addChild(bitmapInstance, shapeInstance);
@@ -940,12 +955,14 @@ declare namespace createjs {
         // properties
         /** 显示列表中的子项数组。您通常应该使用子管理方法，如addChild、removeChild、swapChildren等，而不是直接访问它，但它是为高级用途而包含的。 */
         children: DisplayObject[];
-        /** 指示是否独立启用此容器的子级以进行鼠标/指针交互。如果为false，子级将聚合在容器下——例如，单击子级形状将触发容器上的单击事件。说白了就是容器内子级是否可以接收鼠标/指针交互。 */
+        /** 指示是否独立启用此容器的子级以进行鼠标/指针交互。如果为false，子级将聚合在容器下——例如，单击子级形状将触发容器上的单击事件。
+         * 说白了就是容器内子级是否可以接收鼠标/指针交互。 */
         mouseChildren: boolean;
         /** 返回容器中的子级数。 */
         numChildren: number;
         /** 如果为false，则tick将不会传播到此容器的子级。
-         * 这可以提供一些性能优势。除了阻止"tick"事件被调度外，它还将阻止某些显示对象上与tick相关的更新（例如Sprite&MovieClip帧前进、DOMElement可见性处理）。
+         * 这可以提供一些性能优势。除了阻止"tick"事件被调度外，它还将阻止某些显示对象上与tick相关的更新
+         * （例如Sprite&MovieClip帧前进、DOMElement可见性处理）。
          * @default true
          */
         tickChildren: boolean;
@@ -971,7 +988,7 @@ declare namespace createjs {
         /**
          * 返回指定索引处的子显示对象。如果索引超出范围，则返回null。
          * 
-         * 案例：
+         * ### 案例
          * ```js
          * container.getChildAt(2);
          * ```
@@ -988,7 +1005,7 @@ declare namespace createjs {
         /**
          * 返回显示列表中指定子显示对象的索引，如果不在显示列表中，则返回-1。
          * 
-         * 案例：
+         * ### 案例
          * ```js
          * var index = container.getChildIndex(child);
          * ```
@@ -1010,7 +1027,8 @@ declare namespace createjs {
          */
         getObjectsUnderPoint(x: number, y: number, mode: number): DisplayObject[];
         /**
-         * 与getObjectsUnderPoint功能相似，但仅返回最上层的显示对象。该方法执行效率比getObjectsUnderPoint高。但性能开销仍然不少，详情查看getObjectsUnderPoint的注释。
+         * 与getObjectsUnderPoint功能相似，但仅返回最上层的显示对象。该方法执行效率比getObjectsUnderPoint高。
+         * 但性能开销仍然不少，详情查看getObjectsUnderPoint的注释。
          * @param x 
          * @param y 
          * @param mode 匹配模式，0为所有、1为启用鼠标交互的、2为启用鼠标交互且不透明的对象。
@@ -1019,7 +1037,7 @@ declare namespace createjs {
         /**
          * 从显示列表中删除所有子项。
          * 
-         * 案例：
+         * ### 案例
          * ```js
          * container.removeAllChildren();
          * ```
@@ -1034,13 +1052,12 @@ declare namespace createjs {
         /**
          * 从显示列表中删除指定索引处的子项，并将其父项设置为null。如果索引未知，请使用removeChild()。
          * 
-         * 案例：
+         * ### 案例
          * ```js
          * container.removeChildAt(2);
          * ```
          * 您还可以删除多个子项：
          * 
-         * 案例：
          * ```js
          * container.removeChild(2, 7, ...)
          * ```
@@ -1086,24 +1103,32 @@ declare namespace createjs {
         // properties
         /** 此显示对象的alpha（透明度）。0是完全透明的，1是完全不透明的。 */
         alpha: number;
-        /** 如果已创建缓存，则返回管理cacheCanvas及其属性的类。有关更多信息，请参阅BitmapCache。使用此选项可以控制、检查和更改缓存。在特殊情况下，这可能是修改后的或子类化的BitmapCache。 */
+        /** 如果已创建缓存，则返回管理cacheCanvas及其属性的类。有关更多信息，请参阅BitmapCache。
+         * 使用此选项可以控制、检查和更改缓存。在特殊情况下，这可能是修改后的或子类化的BitmapCache。
+         */
         bitmapCache: BitmapCache;
-        /** 如果缓存处于活动状态，则返回包含此显示对象图像的画布。有关详细信息，请参阅缓存。使用此选项显示缓存的结果。这将是一个HTMLCanvasElement，除非为此缓存特意启用了特殊的缓存规则。 */
+        /** 如果缓存处于活动状态，则返回包含此显示对象图像的画布。有关详细信息，请参阅缓存。使用此选项显示缓存的结果。
+         * 这将是一个HTMLCanvasElement，除非为此缓存特意启用了特殊的缓存规则。
+         */
         cacheCanvas: HTMLCanvasElement | Object;
         /** 返回唯一标识此显示对象的当前缓存的ID号。这可用于确定自上次检查以来缓存是否已更改。 */
         cacheID: number;
-        /** 复合操作指示此显示对象的像素将如何与其后面的元素复合。如果为null，则此属性将从父容器继承。有关更多信息，请阅读关于合成的whatwg规范。有关支持的compositeOperation值的列表，请访问W3C关于Compositing and Blending的草案。 */
+        /** 复合操作指示此显示对象的像素将如何与其后面的元素复合。如果为null，则此属性将从父容器继承。
+         * 有关更多信息，请阅读关于合成的whatwg规范。有关支持的compositeOperation值的列表，请访问W3C关于Compositing and Blending的草案。
+         */
         compositeOperation: string;
         /** 当用户将鼠标悬停在此显示对象上时,将显示相应的鼠标指针样式（例如"指针"、"帮助"、"文本"等），这类似与CSS的cursor */
         cursor: string;
         /** 应用于此显示对象的滤镜对象数组。当显示对象上调用Cache或UpdateCache时滤镜将应用或者更新，并且仅应用于缓存的区域。 */
         filters: Filter[];
         /**
-         * 在检查鼠标交互或调用getObjectsUnderPoint时，将会对hitArea指定的显示对象进行碰撞检测。将对hitArea对象相对于此显示对象的坐标空间应用其变换（就像hitArea对象是此显示对象及其regX/Y的子对象一样）。hitArea将仅使用其自己的alpha值进行碰撞检测，而不管目标显示对象上的alpha值或目标的祖先（父级）。
+         * 在检查鼠标交互或调用{@link getObjectsUnderPoint}时，将会对hitArea指定的显示对象进行碰撞检测。
+         * 将对hitArea对象相对于此显示对象的坐标空间应用其变换（就像hitArea对象是此显示对象及其regX/Y的子对象一样）。
+         * hitArea将仅使用其自己的alpha值进行碰撞检测，而不管目标显示对象上的`alpha`值或目标的祖先（父级）。
          * 
-         * 如果在容器上设置，容器的子对象将不会收到鼠标事件。这类似于将MouseChildren设置为false。
+         * 如果在{@link Container}上设置，容器的子对象将不会收到鼠标事件。这类似于将MouseChildren设置为false。
          * 
-         * 请注意，当前基类的hitTest()方法不使用hitArea，Stage也不支持hitArea。
+         * 请注意，当前基类的`hitTest()`方法不使用hitArea，Stage也不支持hitArea。
          */
         hitArea: DisplayObject;
         /** 此显示对象的唯一ID。方便扩展其他用途用途。 */
@@ -1111,17 +1136,23 @@ declare namespace createjs {
         /** 为该显示对象定义矢量遮罩（剪裁路径）的Shape实例。形状的变换将相对于显示对象的父坐标应用（就像它是父坐标的子坐标一样）。 */
         mask: Shape;
         /** 
-         * 指示在运行鼠标交互时是否包含此对象。将容器的子级设置为false将导致单击该子级时容器上的事件不会触发。将此属性设置为false不会阻止getObjectsUnderPoint方法返回子对象。
-         * 注意：在EaselJS 0.7.0中，mouseEnabled属性在嵌套容器中无法正常工作。请查看GitHub上的最新NEXT版本，以获取已解决此问题的更新版本。该修复程序将在EaselJS的下一个版本中提供。
+         * 指示在运行鼠标交互时是否包含此对象。将容器的子级设置为false将导致单击该子级时容器上的事件不会触发。
+         * 将此属性设置为false不会阻止getObjectsUnderPoint方法返回子对象。
+         * 注意：在EaselJS 0.7.0中，mouseEnabled属性在嵌套容器中无法正常工作。
+         * 请查看GitHub上的最新NEXT版本，以获取已解决此问题的更新版本。该修复程序将在EaselJS的下一个版本中提供。
          */
         mouseEnabled: boolean;
         /** 此显示对象的可选名称。包含在toString中。可用于调试。 */
         name: string;
         /** 对包含此显示对象的Container或Stage对象的引用，如果尚未添加到其中，则为null。 */
         parent: Container;
-        /** 此显示对象的注册点的左偏移量。例如，要使100x100px位图围绕其中心旋转，您可以将regX和regY设置为50。缓存对象的注册点应根据预缓存条件设置，而不是缓存大小。 */
+        /** 此显示对象的注册点的左偏移量。例如，要使100x100px位图围绕其中心旋转，您可以将regX和regY设置为50。
+         * 缓存对象的注册点应根据预缓存条件设置，而不是缓存大小。
+         */
         regX: number;
-        /** 此显示对象的注册点的y偏移。例如，要使100x100px位图围绕其中心旋转，您可以将regX和regY设置为50。缓存对象的注册点应根据预缓存条件设置，而不是缓存大小。 */
+        /** 此显示对象的注册点的y偏移。例如，要使100x100px位图围绕其中心旋转，您可以将regX和regY设置为50。
+         * 缓存对象的注册点应根据预缓存条件设置，而不是缓存大小。
+         */
         regY: number;
         /** 此显示对象的旋转度。 */
         rotation: number;
@@ -1137,13 +1168,18 @@ declare namespace createjs {
         skewX: number;
         /** 垂直倾斜此显示对象的因素。 */
         skewY: number;
-        /** 指示当snapToPixelEnabled为true时，是否应将显示对象绘制为整个像素。要启用/禁用对整个类别的显示对象的捕捉，请在原型上设置此值（例如Text.prototype.snapToPixel=true）。 */
+        /** 指示当snapToPixelEnabled为true时，是否应将显示对象绘制为整个像素。
+         * 要启用/禁用对整个类别的显示对象的捕捉，请在原型上设置此值（例如Text.prototype.snapToPixel=true）。
+         */
         snapToPixel: boolean;
         /** 返回此显示对象将在其上呈现的Stage实例，如果尚未将其添加到Stage实例中，则返回null。 */
         stage: Stage;
         /** 抑制在跨域内容中使用hitTest、鼠标事件和GetObjectsUnderPoint等功能时生成的错误。 */
         static suppressCrossDomainErrors: boolean;
-        /** 如果为false，则tick时钟将不会作用在此显示对象（或其子对象）上运行。这可以提供一些性能优势。除了阻止"tick"事件被分派外，它还将阻止某些显示对象上与tick相关的更新（例如Sprite和MovieClip帧前进，以及DOMElement显示属性）。 */
+        /** 如果为false，则tick时钟将不会作用在此显示对象（或其子对象）上运行。
+         * 这可以提供一些性能优势。除了阻止"tick"事件被分派外，它还将阻止某些显示对象上与tick相关的更新
+         * （例如Sprite和MovieClip帧前进，以及DOMElement显示属性）。
+         */
         tickEnabled: boolean;
         /** 如果非null，则定义此显示对象的变换矩阵，覆盖所有其他变换属性(x, y, rotation, scale, skew)。 */
         transformMatrix: Matrix2D;
@@ -1165,14 +1201,16 @@ declare namespace createjs {
          * 这可以提供更快的渲染，因为内容不需要在每帧中重新渲染。缓存的显示对象可以自由移动、旋转、褪色等，但如果其内容发生变化，则必须再次调用updateCache()手动更新缓存。
          * 您必须通过x、y、w和h参数指定缓存区域。这定义了将使用此显示对象的坐标渲染和缓存的矩形。
          * 
-         * 演示案例
+         * ### 示例
          * 例如你定义了一个圆形半径为25像素，坐标为(0, 0)：
+         * ```js
+         * var shape = new createjs.Shape();
+         * shape.graphics.beginFill("#ff0000").drawCircle(0, 0, 25);
+         * shape.cache(-25, -25, 50, 50);
+         * ```
          * 
-         * 		var shape = new createjs.Shape();
-         * 		shape.graphics.beginFill("#ff0000").drawCircle(0, 0, 25);
-         * 		shape.cache(-25, -25, 50, 50);
-         * 
-         * 请注意，滤镜需要在应用缓存之前声明，否则您必须要在应用滤镜之后调用updateCache。查看Filter类以获取更多信息。某些滤镜（例如BlurFilter）可能无法与scale参数一起按预期工作。
+         * 请注意，滤镜需要在应用缓存之前声明，否则您必须要在应用滤镜之后调用updateCache。
+         * 查看Filter类以获取更多信息。某些滤镜（例如BlurFilter）可能无法与scale参数一起按预期工作。
          * 通常，生成的cacheCanvas宽度和高度都应用了scale，但是一些过滤器（例如BlurFilter）会增加一些填充，这些填充可能不在缓存的区域。
          * 在以前的版本中，缓存是在DisplayObject上处理的，但后来被转移到了BitmapCache。这允许更容易的交互和替代缓存方法，如WebGL和StageGL。
          * 有关选项对象的更多信息，请参阅BitmapCache定义。
@@ -1181,11 +1219,13 @@ declare namespace createjs {
          * @param y 缓存区域的y坐标原点。
          * @param width 缓存区域的宽度。
          * @param height 缓存区域的高度。
-         * @param scale 缓存内容的缩放。例如，如果使用myShape.cache(0,0,100,100,2)缓存矢量形状，则生成的cacheCanvas将为200x200像素。这使您能够以更高的保真度缩放和旋转缓存元素。默认值为1。
+         * @param scale 缓存内容的缩放。例如，如果使用myShape.cache(0,0,100,100,2)缓存矢量形状，则生成的cacheCanvas将为200x200像素。
+         * 这使您能够以更高的保真度缩放和旋转缓存元素。默认值为1。
          */
         cache(x: number, y: number, width: number, height: number, scale?: number): void;
         /**
-         * 返回此DisplayObject的克隆。克隆体的某些属性将恢复为默认值（例如.parent）。缓存不会跨克隆进行维护，某些元素会通过引用进行复制（遮罩、单个滤镜实例、hit area）。
+         * 返回此DisplayObject的克隆。克隆体的某些属性将恢复为默认值（例如.parent）。
+         * 缓存不会跨克隆进行维护，某些元素会通过引用进行复制（遮罩、单个滤镜实例、hit area）。
          * @returns {DisplayObject} 当前DisplayObject实例的克隆。
          */
         clone(): DisplayObject;
@@ -1212,7 +1252,8 @@ declare namespace createjs {
          * |Text|返回近似边界。水平值（x/宽度）非常准确，但垂直值（y/高度）则不准确，尤其是在使用textBaseline值而不是"top"时。|
          * |BitmapText|返回近似边界。如果spritesheet帧注册点接近（x=0，y=0），则值将更准确。|
          * 
-         * 对于某些对象（例如文本或具有许多子对象的容器），计算边界可能很消耗性能，每次调用getBounds（）时都会重新计算边界。通过显式设置边界，可以防止对静态对象进行重新计算：
+         * 对于某些对象（例如文本或具有许多子对象的容器），计算边界可能很消耗性能，每次调用getBounds（）时都会重新计算边界。
+         * 通过显式设置边界，可以防止对静态对象进行重新计算：
          * ```js
          * var bounds = obj.getBounds();
          * obj.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
@@ -1240,7 +1281,8 @@ declare namespace createjs {
          */
         getConcatenatedDisplayProps(props?: DisplayProps): DisplayProps;
         /**
-         * 生成一个Matrix2D对象，表示显示对象及其所有父容器到最高级别祖先（通常是Stage）的组合变换。这可用于在坐标空间之间转换位置，例如使用localToGlobal和globalToLocal。
+         * 生成一个Matrix2D对象，表示显示对象及其所有父容器到最高级别祖先（通常是Stage）的组合变换。
+         * 这可用于在坐标空间之间转换位置，例如使用localToGlobal和globalToLocal。
          * @param mtx 用计算值填充的Matrix2D对象。如果为null，则返回一个新的Matrix2D对象。
          */
         getConcatenatedMatrix(mtx?: Matrix2D): Matrix2D;
@@ -1267,15 +1309,17 @@ declare namespace createjs {
          */
         getTransformedBounds(): Rectangle;
         /**
-         * 将指定的x和y位置从全局（舞台）坐标空间转换到显示对象的坐标空间。例如，这可用于确定显示对象内的当前鼠标位置。返回一个Point实例，其x和y属性与显示对象坐标空间中的变换位置相关。
+         * 将指定的x和y位置从全局（舞台）坐标空间转换到显示对象的坐标空间。
+         * 例如，这可用于确定显示对象内的当前鼠标位置。返回一个Point实例，其x和y属性与显示对象坐标空间中的变换位置相关。
          * 
-         * 案例
-         * 
-         * 		displayObject.x = 300;
-         * 		displayObject.y = 200;
-         * 		stage.addChild(displayObject);
-         * 		var point = displayObject.globalToLocal(100, 100);
-         * 		// Results in x=-200, y=-100
+         * ### 示例
+         * ```js
+         * displayObject.x = 300;
+         * displayObject.y = 200;
+         * stage.addChild(displayObject);
+         * var point = displayObject.globalToLocal(100, 100);
+         * // Results in x=-200, y=-100
+         * ```
          * 
          * @param x 要变换的舞台上的x位置。
          * @param y 舞台上的y位置要变换。
@@ -1283,14 +1327,16 @@ declare namespace createjs {
          */
         globalToLocal(x: number, y: number, pt?: Point | Object): Point;
         /**
-         * 检测显示对象是否与本地坐标中的指定点相交（即在指定位置绘制一个alpha>0的像素）。这将忽略显示对象的alpha、shadow、hitArea、mask和compositeOperation。
+         * 检测显示对象是否与本地坐标中的指定点相交（即在指定位置绘制一个alpha>0的像素）。
+         * 这将忽略显示对象的alpha、shadow、hitArea、mask和compositeOperation。
          * 
-         * 案例
-         * 
-         * 		stage.addEventListener("stagemousedown", handleMouseDown);
-         * 		function handleMouseDown(event) {
-         * 			var hit = myShape.hitTest(event.stageX, event.stageY);
-         * 		}
+         * ### 示例
+         * ```js
+         * stage.addEventListener("stagemousedown", handleMouseDown);
+         * function handleMouseDown(event) {
+         *     var hit = myShape.hitTest(event.stageX, event.stageY);
+         * }
+         * ```
          * 
          * 请注意，EaselJS目前不支持形状到形状的碰撞。
          * @param x 
@@ -1317,11 +1363,12 @@ declare namespace createjs {
          */
         localToGlobal(x: number, y: number, pt?: Point | Object): Point;
         /**
-         * 将指定的x和y位置从该显示对象的坐标空间转换到目标显示对象的坐标空间。返回一个Point实例，其x和y属性与目标坐标空间中的变换位置相关。与使用以下代码处理localToGlobal和globalToLocal的效果相同。
-         * 
-         * 		var pt = this.localToGlobal(x, y);
-         * 		pt = target.globalToLocal(pt.x, pt.y);
-         * 
+         * 将指定的x和y位置从该显示对象的坐标空间转换到目标显示对象的坐标空间。返回一个Point实例，其x和y属性与目标坐标空间中的变换位置相关。
+         * 与使用以下代码处理localToGlobal和globalToLocal的效果相同。
+         * ```js
+         * var pt = this.localToGlobal(x, y);
+         * pt = target.globalToLocal(pt.x, pt.y);
+         * ```
          * @param x 
          * @param y 
          * @param target 
@@ -1382,6 +1429,14 @@ declare namespace createjs {
      * 用于计算和封装与显示相关的属性。
      */
     class DisplayProps {
+        /**
+         * 
+         * @param visible 可见性值。
+         * @param alpha 透明度值。
+         * @param shadow Shadow实例或null。
+         * @param compositeOperation 复合操作值或null。
+         * @param matrix 变换矩阵。默认为新的单位矩阵。
+         */
         constructor(visible?: number, alpha?: number, shadow?: number, compositeOperation?: number, matrix?: number);
 
         // properties
@@ -1465,17 +1520,15 @@ declare namespace createjs {
         // properties
         /** 要管理的DOM对象。 */
         htmlElement: HTMLElement;
-
-        // methods
-        clone(): DisplayObject; // throw error
-        set(props: Object): DOMElement;
-        setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, regX?: number, regY?: number): DOMElement;
     }
-
-
+    /**
+     * 静态类，用于保存库特定信息，如库的版本和buildDate。
+     */
     class EaselJS {
         // properties
+        /** 库的构建日期。 */
         static buildDate: string;
+        /** 库的版本。 */
         static version: string;
     }
     /**
@@ -3345,7 +3398,6 @@ declare namespace createjs {
          */
         constructor(graphics?: Graphics);
 
-
         // properties
         /**
          * 用于显示的 Graphics 实例。
@@ -3374,7 +3426,6 @@ declare namespace createjs {
          */
         constructor(spriteSheet: SpriteSheet, frameOrAnimation?: string | number);
 
-
         // properties
         /**
          * 返回当前正在播放的动画的名称。
@@ -3393,9 +3444,11 @@ declare namespace createjs {
          */
         currentFrame: number;
         /**
-         * 默认情况下，Sprite 实例每 tick 前进一帧。为 Sprite（或其相关的 SpriteSheet）指定帧率（framerate）后，它将根据 tick 之间的时间间隔来调整帧的推进，以维持目标帧率。
+         * 默认情况下，Sprite 实例每 tick 前进一帧。为 Sprite（或其相关的 SpriteSheet）指定帧率（framerate）后，
+         * 它将根据 tick 之间的时间间隔来调整帧的推进，以维持目标帧率。
          * 
-         * 例如，如果一个帧率为 10 的 Sprite 被放置在一个以 40fps 更新的 Stage 上，那么该 Sprite 大约每 4 个 tick 前进一帧。这并不是精确的，因为每个 tick 之间的时间间隔会略有不同。
+         * 例如，如果一个帧率为 10 的 Sprite 被放置在一个以 40fps 更新的 Stage 上，那么该 Sprite 大约每 4 个 tick 前进一帧。
+         * 这并不是精确的，因为每个 tick 之间的时间间隔会略有不同。
          * 
          * 此功能依赖于将 tick 事件对象（或具有适当 "delta" 属性的对象）传递给 update 方法。
          * @default 0
@@ -3431,16 +3484,23 @@ declare namespace createjs {
          */
         getBounds(): Rectangle;
         /**
-         * 
+         * 设置 paused 为 false 并播放指定的动画名称、命名帧或帧编号。
+         * @param frameOrAnimation 播放头应移动至并开始播放的帧编号或动画名称
          */
         gotoAndPlay(frameOrAnimation: string | number): void;
+        /**
+         * 设置 paused 为 true 并停止在指定的动画名称、命名帧或帧编号。
+         * @param frameOrAnimation 播放头应移动至并停止的帧编号或动画名称
+         */
         gotoAndStop(frameOrAnimation: string | number): void;
+        /**
+         * 播放（暂停）当前动画。如果调用 stop 或 gotoAndStop，Sprite 将被暂停。单帧动画将保持不变。
+         */
         play(): void;
-
-        set(props: Object): Sprite;
-        setTransform(x?: number, y?: number, scaleX?: number, scaleY?: number, rotation?: number, skewX?: number, skewY?: number, regX?: number, regY?: number): Sprite;
+        /**
+         * 停止正在播放的动画。当调用 gotoAndPlay 方法时精灵会处于播放状态。请注意，调用 gotoAndPlay 或 play 方法将会恢复播放。
+         */
         stop(): void;
-
     }
 
     class SpriteContainer extends Container
@@ -3464,123 +3524,149 @@ declare namespace createjs {
         rect: Rectangle;
     }
     /**
-     * 封装与精灵表关联的属性和方法。精灵表是一系列图像（通常是动画帧）组合成一个或多个较大的图像。例如，一个由八个100x100图像组成的动画可以组合成一个400x200的精灵表（4帧宽，2帧高）。
+     * 封装与精灵表关联的属性和方法。精灵表是一系列图像（通常是动画帧）组合成一个或多个较大的图像。
+     * 例如，一个由八个100x100图像组成的动画可以组合成一个400x200的精灵表（4帧宽，2帧高）。
+     * 
      * 传递给SpriteSheet构造函数的数据定义了：
+     * 
      * 1.要使用的源图像。
+     * 
      * 2.单个图像帧的位置。
+     * 
      * 3.形成命名动画的序列帧。可选。
+     * 
      * 4.目标播放帧率。可选。
      * 
-     * SpriteSheet格式
-     * SpriteSheets是一个具有两个必需属性（图像和帧）和两个可选属性（帧率和动画）的对象。这使得它们很容易在javascript代码或JSON中定义。
+     * ### SpriteSheet格式
      * 
-     * 图像
+     * SpriteSheets是一个具有两个必需属性（`images`和`frames`）和两个可选属性（`framerate`和`animations`）的对象。这使得它们很容易在javascript代码或JSON中定义。
+     * 
+     * ##### 图像
+     * 
      * 一组源图像。图像可以是HTMlimage实例，也可以是图像的uri。建议采用前者来控制预加载。
+     * ```js
+     * images: [image1, "path/to/image2.png"],
+     * ```
      * 
-     * 		images: [image1, "path/to/image2.png"],
+     * ##### 帧
+     * 定义各个帧。帧数据支持两种格式：当所有帧的大小都相同（在网格中）时，使用具有`width`、`height`、`regX`、`regY`和`count`属性的对象。
+     * - 需要`宽度`和`高度`，并指定框架的尺寸
+     * - `regX`和`regY`表示帧的注册点或"原点"
+     * - `spacing`表示帧之间的间距
+     * - `margin`指定图像周围的边距
+     * - `count`允许您指定精灵表中的总帧数；如果省略，则将基于源图像和帧的尺寸来计算。帧将根据其在源图像中的位置（从左到右，从上到下）分配索引。
      * 
-     * 帧
-     * 定义各个帧。帧数据支持两种格式：当所有帧的大小都相同（在网格中）时，使用具有width、height、regX、regY和count属性的对象。
-     * 1.需要宽度和高度，并指定框架的尺寸
-     * 2.regX和regY表示帧的注册点或"原点"
-     * 3.间距表示帧之间的间距
-     * 4.margin指定图像周围的边距
-     * 5.count允许您指定精灵表中的总帧数；如果省略，则将基于源图像和帧的尺寸来计算。帧将根据其在源图像中的位置（从左到右，从上到下）分配索引。
-     * 
-     * 		frames: {width:64, height:64, count:20, regX: 32, regY:64, spacing:0, margin:0}
+     * ```js
+     * frames: {width:64, height:64, count:20, regX: 32, regY:64, spacing:0, margin:0}
+     * ```
      * 
      * 如果帧的大小不同，请使用帧定义数组。每个定义本身都是一个数组，其中有4个必需项和3个可选项，顺序如下：
-     * 1.前四个，x、y、宽度和高度是必需的，用于定义框架矩形。
-     * 2.第五个参数imageIndex指定源图像的索引（默认为0）。
-     * 3.最后两个regX和regY指定帧的注册点。
+     * - 前四个，`x`、`y`、`width`和`height`是必需的，用于定义框架矩形。
+     * - 第五个参数`imageIndex`指定源图像的索引（默认为0）。
+     * - 最后两个`regX`和`regY`指定帧的注册点。
      * 
-     * 		frames: [
-     * 		    // x, y, width, height, imageIndex*, regX*, regY*
-     * 		    [64, 0, 96, 64],
-     * 		    [0, 0, 64, 64, 1, 32, 32]
-     * 		    // etc.
-     * 		]
+     * ```js
+     * frames: [
+     *     // x, y, width, height, imageIndex*, regX*, regY*
+     *     [64, 0, 96, 64],
+     *     [0, 0, 64, 64, 1, 32, 32]
+     *     // etc.
+     * ]
+     * ```
      * 
-     * 动画
+     * ##### 动画
      * 可选项。定义序列帧动画的名称。每个属性对应一个同名动画。每个动画必须指定要播放的帧，还可以包括相对播放速度（例如，2将以双倍速度播放，0.5以一半速度播放），以及完成后要播放的下一个动画的名称。
      * 
      * 支持三种格式来定义动画中的帧，可以根据需要进行混合和匹配：
-     * 1.对于单帧动画，您可以简单地指定帧索引
      * 
-     * 		animations: {
-     * 		    sit: 7
-     * 		}
+     * 1.对于单帧动画，您可以简单地指定帧索引
+     * ```js
+     * animations: {
+     *     sit: 7
+     * }
+     * ```
      * 
      * 2.对于连续帧的动画，您可以使用一个数组，其中按顺序包含两个必需项和两个可选项：开始、结束、下一步和速度。这将从头到尾播放帧。
      * 
-     * 		animations: {
-     * 		    // start, end, next*, speed*
-     * 		    run: [0, 8],
-     * 		    jump: [9, 12, "run", 2]
-     * 		}
+     * ```js
+     * animations: {
+     *     // start, end, next*, speed*
+     *     run: [0, 8],
+     *     jump: [9, 12, "run", 2]
+     * }
+     * ```
      * 
      * 3.对于非连续帧，您可以使用具有frames属性的对象来定义要按顺序播放的帧索引数组。该对象还可以指定下一步和速度属性。
      * 
-     * 		animations: {
-     * 		    walk: {
-     * 		        frames: [1,2,3,3,2,1]
-     * 		    },
-     * 		    shoot: {
-     * 		        frames: [1,4,5,6],
-     * 		        next: "walk",
-     * 		        speed: 0.5
-     * 		    }
-     * 		}
+     * ```js
+     * animations: {
+     *     walk: {
+     *          frames: [1,2,3,3,2,1]
+     *     },
+     *     shoot: {
+     *         frames: [1,4,5,6],
+     *         next: "walk",
+     *         speed: 0.5
+     *     }
+     * }
+     * ```
      * 
-     * 注意：速度属性是在EaselJS 0.7.0中添加的。早期版本具有频率属性，这与速度相反。例如，在早期版本中，值"4"是正常速度的1/4，但在EaselJS 0.7.0+中是正常速度的4倍。
+     * *注意：*`速度`属性是在EaselJS 0.7.0中添加的。早期版本具有频率属性，这与速度相反。例如，在早期版本中，值"4"是正常速度的1/4，但在EaselJS 0.7.0+中是正常速度的4倍。
      * 
-     * 帧速率
+     * #### 帧速率
      * 可选。指示播放此精灵表的默认帧速率，单位为每秒帧数。有关更多信息，请参阅帧率。
      * 
-     * 		framerate: 20
+     * ```js
+     * framerate: 20
+     * ```
      * 
-     * 请注意，只有在Ticker生成的tick事件中提供了阶段更新方法时，Sprite帧率才有效。
+     * 请注意，只有在{@link Ticker}生成的{@link tick}事件中提供了阶段更新方法时，Sprite帧率才有效。
+     * ```js
+     * createjs.Ticker.on("tick", handleTick);
+     * function handleTick(event) {
+     *     stage.update(event);
+     * }
+     * ```
      * 
-     * 		createjs.Ticker.on("tick", handleTick);
-     * 		function handleTick(event) {
-     * 		    stage.update(event);
-     * 		}
-     * 
-     * 案例
+     * ### 案例
      * 定义一个简单的精灵表，其中一张图像"sprites.jpg"排列规格为50x50的网格中，有三个动画："站立"显示第一帧，"运行"循环第1-5帧，"跳跃"播放第6-8帧并按顺序返回运行。
      * 
-     * 		var data = {
-     * 		    images: ["sprites.jpg"],
-     * 		    frames: {width:50, height:50},
-     * 		    animations: {
-     * 		        stand:0,
-     * 		        run:[1,5],
-     * 		        jump:[6,8,"run"]
-     * 		    }
-     * 		};
-     * 		var spriteSheet = new createjs.SpriteSheet(data);
-     * 		var animation = new createjs.Sprite(spriteSheet, "run");
+     * ```js
+     * var data = {
+     *     images: ["sprites.jpg"],
+     *     frames: {width:50, height:50},
+     *     animations: {
+     *         stand:0,
+     *         run:[1,5],
+     *         jump:[6,8,"run"]
+     *     }
+     * };
+     * var spriteSheet = new createjs.SpriteSheet(data);
+     * var animation = new createjs.Sprite(spriteSheet, "run");
+     * ```
      * 
-     * 生成SpriteSheet图像
+     * ### 生成SpriteSheet图像
      * 可以通过在PhotoShop中组合图像并手动指定帧大小或坐标来手动创建Spritesheets，但是有许多工具可以帮助实现这一点。
-     * 1.从Adobe Flash/Animate导出SpriteSheets或HTML5内容支持EaselJS SpriteSheet格式。
-     * 2.流行的Texture Packer支持EaselJS。
-     * 3.Adobe Flash/Animate中的SWF动画可以使用Zoë导出到SpriteSheets
+     * - 从Adobe Flash/Animate导出SpriteSheets或HTML5内容支持EaselJS SpriteSheet格式。
+     * - 流行的Texture Packer支持EaselJS。
+     * - Adobe Flash/Animate中的SWF动画可以使用Zoë导出到SpriteSheets
      * 
-     * 跨域问题
-     * 警告：使用以下方式与交互时，跨源加载的图像将引发跨源安全错误：
-     * 1.鼠标。
-     * 2.如getObjectUnderPoint()方法。
-     * 3.滤镜。
-     * 4.缓存。
+     * ### 跨域问题
+     * *警告：*使用以下方式与交互时，跨源加载的图像将引发跨源安全错误：
      * 
-     * 在将图像传递给EaselJS之前，您可以通过在图像上设置crossOrigin属性来解决这个问题，或者在PreloadJS的LoadQueue或LoadItems上设置crossOrigin属性。
+     * - 鼠标。
+     * - 如{@link getObjectUnderPoint}方法。
+     * - 滤镜(查看 {@link Filter})。
+     * - 缓存(查看 {@link Cache})。
      * 
-     * 		var img = new Image();
-     * 		img.crossOrigin="Anonymous";
-     * 		img.src = "http://server-with-CORS-support.com/path/to/image.jpg";
+     * 在将图像传递给EaselJS之前，您可以通过在图像上设置`crossOrigin`属性来解决这个问题，或者在PreloadJS的LoadQueue或LoadItems上设置`crossOrigin`属性。
      * 
-     * 如果将字符串路径传递给SpriteSheets，它们将无法跨域工作。存储图像的服务器必须支持跨域请求，否则将无法工作。有关更多信息，请查看MDN上的CORS概述。
+     * ```js
+     * var img = new Image();
+     * img.crossOrigin="Anonymous";
+     * img.src = "http://server-with-CORS-support.com/path/to/image.jpg";
+     * ```
+     * 如果将字符串路径传递给SpriteSheets，它们将无法跨域工作。存储图像的服务器必须支持跨域请求，否则将无法工作。有关更多信息，请查看{@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS | MDN上的CORS概述}。
      */
     class SpriteSheet extends EventDispatcher {
         /**
