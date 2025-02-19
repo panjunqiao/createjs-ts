@@ -3624,31 +3624,136 @@ declare namespace createjs {
         getFrameBounds(frameIndex: number, rectangle?: Rectangle): Rectangle;
         getNumFrames(animation: string): number;
     }
-
-
+    /**
+     * SpriteSheetBuilder允许您从任何显示对象在运行时生成{@link SpriteSheet}实例。
+     * 这允许您将资产作为矢量图形维护（以降低文件大小），并在运行时将它们渲染为SpriteSheet以获得更好的性能。
+     * 
+     * SpriteSheets可以同步或异步构建，以便在生成大型SpriteSheet时不会锁定UI。
+     * 
+     * 注意：在生成的SpriteSheet中使用的"images"实际上是canvas元素，并且它们将被调整为最接近的2的幂，直到{@link maxWidth}或{@link maxHeight}的值。
+     */
     class SpriteSheetBuilder extends EventDispatcher {
-        constructor();
+        /**
+         * 
+         * @param framerate 所创建{@link SpriteSheet}实例的{@link framerate}属性值
+         */
+        constructor(framerate?:number);
 
         // properties
+        /**
+         * 将传递给新创建的{@link SpriteSheet}实例的{@link framerate}属性值。
+         * 如果未指定（或其值为0），则SpriteSheets将使用Ticker的帧速率。
+         * @default 0
+         */
+        framerate: number;
+        /**
+         * 在生成的{@link SpriteSheet}中，图像（不是单个帧）的最大高度。建议使用2的幂值（例如，1024, 2048, 4096）。
+         * 如果帧不能全部适应最大尺寸，则将根据需要创建额外的图像。
+         * @default 2048
+         */
         maxHeight: number;
+        /**
+         * 在生成的{@link SpriteSheet}中，图像（不是单个帧）的最大宽度。建议使用2的幂值（例如，1024, 2048, 4096）。
+         * 如果帧不能全部适应最大尺寸，则将根据需要创建额外的图像。
+         * @default 2048
+         */
         maxWidth: number;
+        /**
+         * 在帧之间使用的填充。这对于在绘制的矢量内容上保留抗锯齿非常有帮助。
+         * @default 1
+         */
         padding: number;
+        /**
+         * 一个介于0和1之间的值，表示构建的进度，或者如果未启动构建则返回-1。
+         * @default -1
+         */
         progress: number;
+        /**
+         * 在绘制所有帧到{@link SpriteSheet}时应用的缩放。这乘以任何在addFrame调用中指定的缩放。
+         * 例如，可以在运行时生成一个针对特定设备分辨率（例如平板电脑与移动设备）的SpriteSheet。
+         * @default 1
+         */
         scale: number;
+        /**
+         * 生成的{@link SpriteSheet}。在构建成功之前，此值将为null。
+         */
         spriteSheet: SpriteSheet;
+        /**
+         * 一个介于0.01到0.99之间的值，表示构建器可以使用的百分比时间。
+         * 这可以被认为是构建器每秒使用的秒数。
+         * 例如，使用timeSlice值为0.3，构建器将每秒运行20次，使用大约15ms的构建时间（30%的可用时间，或0.3秒每秒）。默认值为0.3。
+         * @default 0.3
+         */
         timeSlice: number;
 
         // methods
-        addAnimation(name: string, frames: number[], next?: string|boolean, frequency?: number): void;
+        /**
+         * 添加一个动画，该动画将包含在创建的{@link SpriteSheet}中。
+         * @param name 动画的名称。
+         * @param frames 一个包含动画帧索引的数组。例如，[3,6,5]描述了一个按顺序播放帧索引3、6和5的动画。
+         * @param next 指定在动画结束后要继续播放的动画名称。您也可以传递false以使动画在结束时停止。默认情况下，它将循环到同一动画的开始。
+         * @param frequency 指定动画的帧进阶速度。例如，值为0.5将导致动画每两个tick向前移动一次。注意：早期版本使用频率，它与频率相反。
+         */
+        addAnimation(name: string, frames: number[], next?: string, frequency?: number): void;
+        /**
+         * 添加一个帧到{@link SpriteSheet}。注意，帧不会在调用{@link build}方法之前绘制。
+         * 可选的setup params允许您在绘制之前立即运行一个函数。
+         * 例如，这允许您多次添加一个源，但操纵它或它的子级以改变它以生成不同的帧。
+         * 
+         * 注意：源对象的变换（x, y, scale, rotate, alpha）将被忽略，除了regX/Y。
+         * 要应用变换到源对象并将其捕获在SpriteSheet中，只需将其放入一个{@link Container}中并传递Container作为源。
+         * 
+         * @param source 要绘制为帧的源{@link DisplayObject}。
+         * @param sourceRect 定义要绘制到帧的源部分的矩形。
+         * 如果未指定，它将查找source上的`getBounds`方法、bounds属性或`nominalBounds`属性以使用。
+         * 如果未找到，则将跳过帧。
+         * @param scale 可选。要绘制此帧的缩放比例。默认值为1。
+         * @param setupFunction 可选。在绘制之前立即运行一个函数。它将使用两个参数调用：source和setupData。
+         * @param setupData 可选。传递给setupFunction的任意数据。
+         * @returns 返回刚刚添加的帧的索引，或者如果无法确定sourceRect，则返回null。
+         */
         addFrame(source: DisplayObject, sourceRect?: Rectangle, scale?: number, setupFunction?: () => any, setupData?: Object): number;
+        /**
+         * 这将接受一个{@link MovieClip}实例，并将其帧和标签添加到此构建器中。标签将作为从标签索引到下一个标签的动画添加。
+         * 例如，如果有一个名为"foo"的标签在帧0和名为"bar"的标签在帧10，在一个有15帧的MovieClip中，
+         * 它将添加一个名为"foo"的动画，从帧索引0到9，以及一个名为"bar"的动画，从帧索引10到14。
+         * 
+         * 注意：这将遍历MovieClip，设置{@link actionsEnabled}为false，结束在最后一帧。
+         * 
+         * @param source 要添加到SpriteSheet的源{@link MovieClip}实例。
+         * @param sourceRect 定义要绘制到帧的源部分的矩形。
+         * 如果未指定，它将查找{@link getBounds}方法、`frameBounds`数组、`bounds`属性或`nominalBounds`属性在source上使用。
+         * 如果未找到，则将跳过MovieClip。
+         * @param scale 要绘制MovieClip的缩放比例。
+         * @param setupFunction 一个在绘制每个帧之前立即调用的函数。
+         * 它将使用三个参数调用：source, setupData, 和帧索引。
+         * @param setupData 传递给setupFunction作为第二个参数的任意设置数据。
+         * @param labelFunction 此方法将使用四个参数调用：label名称、source MovieClip实例、开始帧索引（在movieclip时间轴中）和结束索引。
+         * 它必须返回label/animation的新名称，或`false`以排除label。
+         */
         addMovieClip(source: MovieClip, sourceRect?: Rectangle, scale?: number, setupFunction?: () => any, setupData?: Object, labelFunction?: () => any): void;
+        /**
+         * 基于当前帧构建SpriteSheet实例。
+         * @returns 创建的SpriteSheet实例，或者如果正在构建或者发生错误则返回null。
+         */
         build(): SpriteSheet;
+        /**
+         * 异步构建SpriteSheet实例。它将每秒运行20次，使用由timeSlice定义的时间片。当它完成时，它将调用指定的回调。
+         * @param timeSlice 设置此实例的timeSlice属性。
+         */
         buildAsync(timeSlice?: number): void;
+        /**
+         * SpriteSheetBuilder 实例无法被克隆。
+         */
         clone(): void; // throw error
+        /**
+         * 停止当前的异步构建。
+         */
         stopAsync(): void;
     }
     /**
-     * SpriteSheetUtils类是用于处理SpriteSheets的静态方法的集合。精灵表是一系列图像（通常是动画帧）组合成规则网格上的单个图像。例如，一个由8个100x100图像组成的动画可以组合成一个400x200的精灵表（4帧宽2帧高）。SpriteSheetUtils类使用静态接口，不应实例化。
+     * SpriteSheetUtils类是用于处理SpriteSheets的静态方法的集合。精灵表是一系列图像（通常是动画帧）组合成规则网格上的单个图像。
+     * 例如，一个由8个100x100图像组成的动画可以组合成一个400x200的精灵表（4帧宽2帧高）。SpriteSheetUtils类使用静态接口，不应实例化。
      */
     class SpriteSheetUtils {
         /**
@@ -3667,7 +3772,7 @@ declare namespace createjs {
         static mergeAlpha(rgbImage: HTMLImageElement, alphaImage: HTMLImageElement, canvas?: HTMLCanvasElement): HTMLCanvasElement; // deprecated
     }
 
-    class SpriteStage extends Stage
+    /*class SpriteStage extends Stage
     {
         constructor(canvas: HTMLCanvasElement | string, preserveDrawingBuffer?: boolean, antialias?: boolean);
 
@@ -3683,7 +3788,7 @@ declare namespace createjs {
         // methods
         clearImageTexture(image: Object): void;
         updateViewport(width: number, height: number): void;
-    }
+    }*/
     /**
      * Stage是显示列表的根容器。每次调用tick方法时，都会将其显示列表渲染到目标画布上。
      * 
