@@ -5,7 +5,6 @@ createjs的ts版本
 
 [createjs官网中文](https://createjs.cc/)
 
-[createjs官网中文](https://createjs.site/)
 # 社区交流
 QQ群：320648191
 
