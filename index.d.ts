@@ -4506,31 +4506,116 @@ declare namespace createjs {
         static setPaused(value: boolean): void;
 
         // EventDispatcher mixins
-        /*static addEventListener(type: string, listener: Stage, useCapture?: boolean): Stage;
-        static addEventListener(type: string, listener: (eventObj: Object) => boolean, useCapture?: boolean): Function;
-        static addEventListener(type: string, listener: (eventObj: Object) => void, useCapture?: boolean): Function;
-        static addEventListener(type: string, listener: { handleEvent: (eventObj: Object) => boolean; }, useCapture?: boolean): Object;
-        static addEventListener(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): Object;
+        /**
+         * 
+         * @param type 事件类型。
+         * @param listener 具有handleEvent方法的对象，或在事件被分派时将被调用的函数。
+         * @param useCapture 对于冒泡的事件，指示是在捕获阶段还是冒泡/目标阶段监听事件。
+         * @returns 返回用于链接或赋值的侦听器。
+         */
+        static addEventListener(type: string, listener: (eventObj: Object) => void|boolean, useCapture?: boolean): Function|Object
+        static addEventListener(type: string, listener: { handleEvent: (eventObj: Object) => void|boolean}, useCapture?: boolean): Object
+        static addEventListener(type: string, listener: (e?:Event|any) => void, useCapture?: boolean): ()=>{}
+        /**
+         * 将指定的事件分派给所有侦听器。
+         * @param eventObj 具有"type"属性或字符串类型的对象。虽然通用对象可以工作，但建议使用CreateJS事件实例。
+         * 如果使用了字符串，dispatchEvent将在必要时使用指定的类型构造一个Event实例。
+         * 后一种方法可以用于避免可能没有任何侦听器的非冒泡事件的事件对象实例化。
+         * @param bubbles 指定将字符串传递给eventObj时的气泡值。
+         * @param cancelable 指定将字符串传递给eventObj时可取消的值。
+         * @returns 如果对可取消事件调用了preventDefault()，则返回false，否则返回true。
+         */
         static dispatchEvent(eventObj: Object | string | Event, target?: Object): boolean;
+        /**
+         * 指定事件类型是否至少有一个侦听器。
+         * @param type 事件类型
+         * @returns 如果指定事件至少有一个侦听器，则返回true。
+         */
         static hasEventListener(type: string): boolean;
-        static off(type: string, listener: (eventObj: Object) => boolean, useCapture?: boolean): void;
-        static off(type: string, listener: (eventObj: Object) => void, useCapture?: boolean): void;
-        static off(type: string, listener: { handleEvent: (eventObj: Object) => boolean; }, useCapture?: boolean): void;
-        static off(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): void;
+        static off(type: string, listener: { handleEvent: (eventObj: Object) => boolean|void; }, useCapture?: boolean): void;
+        //off(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): void;
         static off(type: string, listener: Function, useCapture?: boolean): void; // It is necessary for "arguments.callee"
-
-        static on(type: string, listener: (eventObj: Object) => boolean, scope?: Object, once?: boolean, data?: any, useCapture?: boolean): Function;
-        static on(type: string, listener: (eventObj: Object) => void, scope?: Object, once?: boolean, data?: any, useCapture?: boolean): Function;
-        static on(type: string, listener: { handleEvent: (eventObj: Object) => boolean; }, scope?: Object, once?: boolean, data?: any, useCapture?: boolean): Object;
-        static on(type: string, listener: { handleEvent: (eventObj: Object) => void; }, scope?: Object, once?: boolean, data?: any, useCapture?: boolean): Object;
+        static off<T extends Event = Event>(type: string, listener: Function|((eventObj?: T)=>void), useCapture?: boolean): void;
+        /**
+         * 一种使用addEventListener的快捷方法，可以更容易地指定执行范围，使侦听器只运行一次，将任意数据与侦听器相关联，并删除侦听器。
+         * 
+         * 此方法通过创建匿名包装器函数并使用addEventListener订阅它来工作。返回包装器函数以与removeEventListener一起使用（或关闭）。
+         * 
+         * 重要提示：要删除添加了on的侦听器，您必须将返回的包装器函数作为侦听器传递，或使用remove。
+         * 同样，每次调用NEW包装器函数时，都会订阅，因此使用相同参数对on的多次调用将创建多个侦听器。
+         * 
+         * ### 案例
+         * ```js
+         * var listener = myBtn.on("click", handleClick, null, false, {count:3});
+         * function handleClick(evt, data) {
+         *     data.count -= 1;
+         *     console.log(this == myBtn); // true - scope defaults to the dispatcher
+         *     if (data.count == 0) {
+         *         alert("clicked 3 times!");
+         *         myBtn.off("click", listener);
+         *         // alternately: evt.remove();
+         *     }
+         * }
+         * ```
+         * @param type 事件类型
+         * @param listener 侦听器
+         * @param scope 执行侦听器的作用域。对于函数侦听器，默认为dispatcher/currentTarget，对于对象侦听器，
+         * 则默认为侦听器本身（即使用handleEvent）。直白点说就是this指向谁，默认是指向侦听器自身。
+         * @param once 是否仅执行一次侦听器
+         * @param data 传参
+         * @param useCapture 
+         */
+        static on(type: string, listener: (eventObj: Object) => boolean|void, scope?: Object, once?: boolean, data?: any, useCapture?: boolean): Function;
+        //on(type: string, listener: (eventObj: Object) => void, scope?: Object, once?: boolean, data?: any, useCapture?: boolean): Function;
+        static on(type: string, listener: { handleEvent: (eventObj: Object) => boolean|void; }, scope?: Object, once?: boolean, data?: any, useCapture?: boolean): Object;
+        //on(type: string, listener: { handleEvent: (eventObj: Object) => void; }, scope?: Object, once?: boolean, data?: any, useCapture?: boolean): Object;
+        static on(type: string, listener:(eventObj: any)=>void, scope?: any, once?: boolean, data?: any, useCapture?: boolean):void;
+        static on<T extends Event = Event>(type: string, listener: Function|((eventObj?: T)=>void|boolean), scope?: any, once?: boolean, data?: any, useCapture?: boolean):Function|((eventObj?: T)=>void);
+        /**
+         * 删除指定类型的所有侦听器，或所有类型的所有监听器。
+         * 
+         * ### 案例
+         * ```js
+         * // Remove all listeners
+         * displayObject.removeAllEventListeners();
+         * 
+         * // Remove all click listeners
+         * displayObject.removeAllEventListeners("click");
+         * ```
+         * @param type 事件类型
+         */
         static removeAllEventListeners(type?: string): void;
-        static removeEventListener(type: string, listener: (eventObj: Object) => boolean, useCapture?: boolean): void;
-        static removeEventListener(type: string, listener: (eventObj: Object) => void, useCapture?: boolean): void;
-        static removeEventListener(type: string, listener: { handleEvent: (eventObj: Object) => boolean; }, useCapture?: boolean): void;
-        static removeEventListener(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): void;
+        /**
+         * 删除指定的事件侦听器。
+         * 
+         * 重要提示：您必须传递添加事件时使用的确切函数引用。如果使用代理函数或函数闭包作为回调，则必须使用代理/闭包引用——新的代理或闭包将无法工作。
+         * 
+         * ### 案例
+         * ```js
+         * displayObject.removeEventListener("click", handleClick);
+         * ```
+         * @param type 事件类型
+         * @param listener 监听器函数或对象。
+         * @param useCapture 对于冒泡的事件，指示是在捕获阶段还是冒泡/目标阶段监听事件。
+         */
+        static removeEventListener(type: string, listener: (eventObj: Object) => boolean|void, useCapture?: boolean): void;
+        //removeEventListener(type: string, listener: (eventObj: Object) => void, useCapture?: boolean): void;
+        static removeEventListener(type: string, listener: { handleEvent: (eventObj: Object) => boolean|void; }, useCapture?: boolean): void;
+        //removeEventListener(type: string, listener: { handleEvent: (eventObj: Object) => void; }, useCapture?: boolean): void;
         static removeEventListener(type: string, listener: Function, useCapture?: boolean): void; // It is necessary for "arguments.callee"
+        /**
+         * @returns 实例的字符串表示。
+         */
         static toString(): string;
-        static willTrigger(type: string): boolean;*/
+        /**
+         * 指示此对象或其任何祖先（父级、父级的父级等）上是否至少有一个指定事件类型的侦听器。
+         * 返回值true表示，如果从该对象分派指定类型的冒泡事件，它将触发至少一个侦听器。
+         * 
+         * 这类似于{@link hasEventListener}，但它在整个事件流中搜索侦听器，而不仅仅是这个对象。
+         * @param type 事件类型
+         * @returns 如果指定事件至少有一个侦听器，则返回true。
+         */
+        static willTrigger(type: string): boolean;
     }
     /**
      * 目前没有TickerEvent的定义
