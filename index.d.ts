@@ -968,16 +968,52 @@ declare namespace createjs {
         tickChildren: boolean;
 
         // methods
+        /**
+         * 将一个子元素添加到显示列表的顶部。
+         * 
+         * ### 案例
+         * ```js
+         * container.addChild(bitmapInstance);
+         * ```
+         * 您也可以一次添加多个子项：
+         * ```js
+         * container.addChild(bitmapInstance, shapeInstance, textInstance);
+         * ```
+         * @param child 要添加的显示对象。
+         * @returns 返回被添加的子对象，如果添加了多个子对象则返回最后一个子对象。
+         */
         addChild<T extends DisplayObject>(child: T): T;
-        addChild<T extends DisplayObject>(child0: DisplayObject, lastChild: T): T;
+        /*addChild<T extends DisplayObject>(child0: DisplayObject, lastChild: T): T;
         addChild<T extends DisplayObject>(child0: DisplayObject, child1: DisplayObject, lastChild: T): T;
-        addChild<T extends DisplayObject>(child0: DisplayObject, child1: DisplayObject, child2: DisplayObject, lastChild: T): T;
+        addChild<T extends DisplayObject>(child0: DisplayObject, child1: DisplayObject, child2: DisplayObject, lastChild: T): T;*/
         addChild(...children: DisplayObject[]): DisplayObject;
+        /**
+         * 将子元素添加到显示列表的指定索引位置，将索引位置相同或更高的子元素依次上移一位，并将其父级设置为该容器。
+         * ### 案例
+         * ```js
+         * addChildAt(child1, index);
+         * ```
+         * 您也可以添加多个子元素，例如：
+         * ```js
+         * addChildAt(child1, child2, ..., index);
+         * ```
+         * 索引必须介于0和numChildren之间。例如，要在显示列表中将myShape添加到otherShape下方，可以使用：
+         * ```js
+         * container.addChildAt(myShape, container.getChildIndex(otherShape));
+         * ```
+         * 这也会使原索引位置及更高位置的子元素索引依次增加一位。如果索引超出范围则静默失败。
+         * @param child 要添加的显示对象。
+         * @param index 要添加子元素的索引。
+         * @returns 返回被添加的子对象，如果添加了多个子对象则返回最后一个子对象。
+         */
         addChildAt<T extends DisplayObject>(child: T, index: number): T;
-        addChildAt<T extends DisplayObject>(child0: DisplayObject, lastChild: T, index: number): T;
-        addChildAt<T extends DisplayObject>(child0: DisplayObject, child1: DisplayObject, lastChild: T, index: number): T;
+        /*addChildAt<T extends DisplayObject>(child0: DisplayObject, lastChild: T, index: number): T;
+        addChildAt<T extends DisplayObject>(child0: DisplayObject, child1: DisplayObject, lastChild: T, index: number): T;*/
         addChildAt(...childOrIndex: (DisplayObject|number)[]): DisplayObject; // actually (...child: DisplayObject[], index: number)
-
+        /**
+         * 返回此容器的克隆副本。某些特定于当前实例上下文的属性将被恢复为默认值（例如 .parent（父级））。
+         * @param recursive 
+         */
         clone(recursive?: boolean): Container;
         /**
          * 如果指定的显示对象是此容器或是此容器的后代（子、孙等），则返回true。
