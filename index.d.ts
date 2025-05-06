@@ -4362,10 +4362,11 @@ declare namespace createjs {
          */
         getMeasuredWidth(): number;
         /**
-         * 返回一个包含width、height和lines属性的对象。width和height是绘制文本的视觉宽度和高度。lines属性包含一个字符串数组，每个字符串代表将绘制的文本行，考虑到换行和换行。这些字符串没有尾随空白。
+         * 返回一个包含width、height和lines属性的对象。width和height是绘制文本的视觉宽度和高度。
+         * lines属性包含一个字符串数组，每个字符串代表将绘制的文本行，考虑到换行和换行。这些字符串没有尾随空白。
          * @returns 一个包含width、height和lines属性的对象。
          */
-        getMetrics(): Object;
+        getMetrics(): {width:number, height:number, lines:string[]};
         /**
          * 提供一个链式快捷方法，用于在实例上设置多个属性。
          * 
